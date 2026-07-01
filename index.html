@@ -1,25 +1,31 @@
 <!DOCTYPE html>
-<html lang="ur" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aga Mohammad Fawaz | Portfolio</title>
     <style>
         :root { --bg: #000; --accent: #ff0000; --text: #fff; }
-        body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; overflow-x: hidden; margin: 0; padding: 0; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; padding: 0; overflow-x: hidden; }
         
         .slide-up { opacity: 0; transform: translateY(50px); transition: all 1s ease-out; }
         .show { opacity: 1; transform: translateY(0); }
 
-        header { height: auto; padding: 60px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border-bottom: 2px solid var(--accent); }
-        .urdu-name { font-size: 3.5rem; color: var(--accent); margin-bottom: 10px; font-family: 'Arial', sans-serif; }
-        h1 { font-size: 2rem; margin: 10px 0; }
-        .tagline { font-size: 1rem; color: #ccc; letter-spacing: 1px; }
+        /* Urdu styling */
+        .urdu-name { font-size: 3.5rem; color: var(--accent); margin-top: 50px; direction: rtl; }
         
+        header { padding: 40px 20px; border-bottom: 2px solid var(--accent); }
+        h1 { font-size: 2rem; margin: 10px 0; }
+        .tagline { font-size: 1rem; color: #ccc; margin-bottom: 20px; }
+        
+        /* Image Hover Effect */
+        .img-container img { width: 120px; height: 120px; object-fit: cover; border-radius: 10px; border: 2px solid #ff0000; transition: transform 0.3s ease; }
+        .img-container img:hover { transform: scale(1.1); }
+
         section { padding: 60px 20px; max-width: 800px; margin: auto; }
         h2 { color: var(--accent); margin-bottom: 20px; border-bottom: 2px solid var(--accent); display: inline-block; }
         p { line-height: 1.8; margin-bottom: 20px; }
-        .badge-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+        .badge-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
         .badge { border: 1px solid var(--accent); padding: 10px; border-radius: 5px; font-size: 0.9rem; }
         
         .contact-item { margin-bottom: 10px; }
@@ -30,9 +36,9 @@
 
     <header class="slide-up show">
         <div class="urdu-name">آغا محمد فواد</div>
-        <div style="display: flex; gap: 10px; justify-content: center; margin: 20px 0;">
-            <img src="FB_IMG_1781970470137.jpg" alt="Fawaz" style="width: 120px; height: 120px; object-fit: cover; border-radius: 10px; border: 2px solid #ff0000;">
-            <img src="IMG-20260501-WA0012.jpg" alt="Fawaz" style="width: 120px; height: 120px; object-fit: cover; border-radius: 10px; border: 2px solid #ff0000;">
+        <div class="img-container" style="display: flex; gap: 15px; justify-content: center; margin: 20px 0;">
+            <img src="FB_IMG_1781970470137.jpg" alt="Fawaz">
+            <img src="IMG-20260501-WA0012.jpg" alt="Fawaz">
         </div>
         <h1>Aga Mohammad Fawaz</h1>
         <p class="tagline">CSE Diploma Student | Tech Enthusiast</p>

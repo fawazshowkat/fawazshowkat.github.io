@@ -3,62 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>آگا محمّد فواز| Portfolio</title>
+    <title>Aga Mohammad Fawaz | Portfolio</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root { 
-            --bg-color: #0a0a0a; 
-            --card-bg: #1a1a1a; 
-            --accent: #e63946; 
-            --text-light: #ffffff; 
-            --text-gray: #b0b0b0; 
-        }
-        body { font-family: 'Segoe UI', sans-serif; line-height: 1.6; color: var(--text-light); background: var(--bg-color); }
-        nav { position: fixed; top: 0; width: 100%; background: var(--bg-color); border-bottom: 2px solid var(--accent); z-index: 1000; padding: 15px; }
-        nav ul { list-style: none; display: flex; justify-content: center; gap: 20px; }
-        nav a { color: var(--text-light); text-decoration: none; font-weight: bold; }
-        header { background: linear-gradient(135deg, #000000 0%, var(--accent) 100%); color: white; padding: 100px 20px; text-align: center; }
-        .container { max-width: 900px; margin: 40px auto; padding: 20px; background: var(--card-bg); border-radius: 10px; border: 1px solid #333; }
-        section { margin-bottom: 40px; }
+        :root { --bg: #000; --accent: #ff0000; --text: #fff; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; overflow-x: hidden; margin: 0; padding: 0; }
+        
+        /* Sliding Animation */
+        .slide-up { opacity: 0; transform: translateY(50px); transition: all 1s ease-out; }
+        .show { opacity: 1; transform: translateY(0); }
+
+        header { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border-bottom: 2px solid var(--accent); }
+        h1 { font-size: 3.5rem; color: var(--accent); margin-bottom: 10px; }
+        .tagline { font-size: 1.5rem; letter-spacing: 2px; }
+        
+        section { padding: 80px 20px; max-width: 800px; margin: auto; }
         h2 { color: var(--accent); margin-bottom: 20px; border-bottom: 2px solid var(--accent); display: inline-block; }
-        .skill-item { display: inline-block; background: var(--accent); color: white; padding: 8px 15px; border-radius: 5px; margin: 5px; font-weight: bold; }
+        p { line-height: 1.8; margin-bottom: 20px; }
+        .skill-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+        .skill { border: 1px solid var(--accent); padding: 10px 20px; border-radius: 5px; }
     </style>
 </head>
 <body>
-    <nav><ul>
-        <li><a href="#home">Home</a></li>
-        <li><a href="#about">About</a></li>
-        <li><a href="#skills">Skills</a></li>
-        <li><a href="#projects">Projects</a></li>
-    </ul></nav>
 
-    <header id="home">
-        <h1>آگا محمّد فواز</h1>
-        <p>STUDENT OF KGP | Aspiring IAF ASPIRANT</p>
+    <header>
+        <h1 class="slide-up">Aga Mohammad Fawaz</h1>
+        <p class="tagline slide-up">CSE Diploma Student | Class Representative @ KGP | Aspiring IAF Technical Ground Branch</p>
     </header>
 
-    <div class="container">
-        <section id="about">
-            <h2>About Me</h2>
-            <p>I am a 18-year-old Computer Science Engineering student at <strong>Kashmir Government Polytechnic (KGP)</strong>, Beyond the classroom, I am deeply fascinated by the intersection of technology and human psychology. I find great inspiration in the existential works of <strong>Fyodor Dostoevsky and Franz Kafka</strong>, which fuel my analytical thinking.</p>
-            <p>When I am not writing C code or troubleshooting IoT hardware, you can find me on the badminton court—I am a <strong>state-level qualifier</strong> who thrives on competition and discipline. My ultimate career ambition is to contribute my technical expertise to the <strong>Indian Air Force (IAF)</strong>.</p>
-        </section>
+    <section class="slide-up">
+        <h2>About Me</h2>
+        <p>I am a 16-year-old Computer Science Engineering student at <strong>Kashmir Government Polytechnic (KGP)</strong>, where I proudly serve as the Class Representative. My life is defined by a blend of technical discipline and intellectual curiosity.</p>
+        <p>I am deeply inspired by the existential insights found in the works of <strong>Fyodor Dostoevsky and Franz Kafka</strong>, which provide me with a unique perspective on analytical problem-solving. Beyond the screen, I am a <strong>state-level qualified badminton player</strong>, a passion that has instilled in me the grit and focus I apply to my career goals—specifically, my mission to serve in the <strong>Indian Air Force (IAF)</strong>.</p>
+    </section>
 
-        <section id="skills">
-            <h2>Technical Skills</h2>
-            <div class="skill-item">C Programming</div>
-            <div class="skill-item">IoT Hardware</div>
-            <div class="skill-item">Web Development</div>
-            <div class="skill-item">Technical Troubleshooting</div>
-        </section>
+    <section class="slide-up">
+        <h2>Expertise & Skills</h2>
+        <div class="skill-grid">
+            <div class="skill">C Programming</div>
+            <div class="skill">IoT Hardware & Development</div>
+            <div class="skill">Web Development (HTML/CSS)</div>
+            <div class="skill">Leadership & Coordination</div>
+            <div class="skill">Problem Solving</div>
+        </div>
+    </section>
 
-        <section id="projects">
-            <h2>Current Focus</h2>
-            <p><strong>Career Aspirations:</strong> I am actively seeking internship opportunities within the Defence Research and Development Organisation (DRDO). My academic focus on Computer Science Engineering, combined with my rigorous training in IoT and C-Programming, has fueled my desire to apply technical solutions to national defense challenges.</p>
-            <p><strong>FURTHER INTERESTS:</strong> Be a good reade/author and into sci-tech.</p>
-<img src="my-photo.jpg" alt="Aga Mohammad Fawaz" style="width: 100%; max-width: 300px; border-radius: 10px; border: 2px solid #e63946;">
+    <section class="slide-up">
+        <h2>Current Focus</h2>
+        <p>I am currently refining my technical skills through intensive training at <strong>C-IIIT</strong>, focusing on IoT and advanced C-Programming. As I navigate my diploma, I am actively seeking <strong>DRDO internship opportunities</strong> to contribute my analytical skills to national defense research while preparing for my future in aviation and defense technology.</p>
+    </section>
 
-        </section>
-    </div>
+    <script>
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('show'); });
+        });
+        document.querySelectorAll('.slide-up').forEach((el) => observer.observe(el));
+    </script>
 </body>
 </html>

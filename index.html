@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ur" dir="rtl"> <!-- Added language support -->
+<html lang="ur" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,42 +8,61 @@
         :root { --bg: #000; --accent: #ff0000; --text: #fff; }
         body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; overflow-x: hidden; margin: 0; padding: 0; }
         
-        /* Animation: Forces elements to be visible if animation fails */
         .slide-up { opacity: 0; transform: translateY(50px); transition: all 1s ease-out; }
         .show { opacity: 1; transform: translateY(0); }
 
-        /* Urdu styling */
-        .urdu-name { font-size: 3.5rem; color: var(--accent); margin-bottom: 15px; font-family: 'Arial', sans-serif; }
-        
-        header { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border-bottom: 2px solid var(--accent); }
+        header { height: auto; padding: 60px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border-bottom: 2px solid var(--accent); }
+        .urdu-name { font-size: 3.5rem; color: var(--accent); margin-bottom: 10px; font-family: 'Arial', sans-serif; }
         h1 { font-size: 2rem; margin: 10px 0; }
-        .tagline { font-size: 1rem; color: #ccc; }
+        .tagline { font-size: 1rem; color: #ccc; letter-spacing: 1px; }
         
         section { padding: 60px 20px; max-width: 800px; margin: auto; }
         h2 { color: var(--accent); margin-bottom: 20px; border-bottom: 2px solid var(--accent); display: inline-block; }
+        p { line-height: 1.8; margin-bottom: 20px; }
         .badge-grid { display: flex; flex-wrap: wrap; gap: 10px; }
         .badge { border: 1px solid var(--accent); padding: 10px; border-radius: 5px; font-size: 0.9rem; }
+        
+        .contact-item { margin-bottom: 10px; }
+        .btn { display: inline-block; background: var(--accent); color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 20px; }
     </style>
 </head>
 <body>
 
-    <header>
-        <!-- Added a class 'show' to header items so they animate immediately -->
-        <div class="urdu-name slide-up show">آغا محمد فواد</div>
-        <img src="FB_IMG_1781970470137.jpg" alt="Fawaz" style="width: 150px; border-radius: 10px; border: 2px solid #ff0000; margin: 10px;">
-        <h1 class="slide-up show">Aga Mohammad Fawaz</h1>
-        <p class="tagline slide-up show">CSE Diploma Student | Tech Enthusiast</p>
+    <header class="slide-up show">
+        <div class="urdu-name">آغا محمد فواد</div>
+        <div style="display: flex; gap: 10px; justify-content: center; margin: 20px 0;">
+            <img src="FB_IMG_1781970470137.jpg" alt="Fawaz" style="width: 120px; height: 120px; object-fit: cover; border-radius: 10px; border: 2px solid #ff0000;">
+            <img src="IMG-20260501-WA0012.jpg" alt="Fawaz" style="width: 120px; height: 120px; object-fit: cover; border-radius: 10px; border: 2px solid #ff0000;">
+        </div>
+        <h1>Aga Mohammad Fawaz</h1>
+        <p class="tagline">CSE Diploma Student | Tech Enthusiast</p>
     </header>
 
     <section class="slide-up">
         <h2>About Me</h2>
         <p>I am a Computer Science Engineering student currently based in Kashmir. My journey is shaped by a mix of technical rigor and a deep love for literature.</p>
+        <p>An <strong>Alumnus of Army Goodwill Public School, Pahalgam</strong>, and currently a student at KGP, I find deep intellectual stimulation in the literature of <strong>Dostoevsky and Kafka</strong>.</p>
     </section>
 
-    <!-- ... rest of your sections ... -->
+    <section class="slide-up">
+        <h2>Achievements & Interests</h2>
+        <div class="badge-grid">
+            <div class="badge">🏸 State-Level Badminton Qualifier</div>
+            <div class="badge">📚 Literature & Existential Philosophy</div>
+            <div class="badge">💻 C Programming & IoT</div>
+            <div class="badge">🎓 AGPS Pahalgam Alumnus</div>
+        </div>
+    </section>
+
+    <section class="slide-up">
+        <h2>Contact & Resume</h2>
+        <div class="contact-item">📸 <strong>Instagram:</strong> @fawaz.showkat</div>
+        <div class="contact-item">👻 <strong>Snapchat:</strong> @fawaz.showkat</div>
+        <div class="contact-item">📧 <strong>Email:</strong> fawazaga@gmail.com</div>
+        <a href="#" class="btn">Download My Resume</a>
+    </section>
 
     <script>
-        // Modified to ensure elements with class 'show' are processed
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('show'); });
         });

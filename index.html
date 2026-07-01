@@ -8,48 +8,60 @@
         :root { --bg: #000; --accent: #ff0000; --text: #fff; }
         body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; overflow-x: hidden; margin: 0; padding: 0; }
         
-        /* Sliding Animation */
         .slide-up { opacity: 0; transform: translateY(50px); transition: all 1s ease-out; }
         .show { opacity: 1; transform: translateY(0); }
 
         header { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border-bottom: 2px solid var(--accent); }
-        h1 { font-size: 3.5rem; color: var(--accent); margin-bottom: 10px; }
-        .tagline { font-size: 1.5rem; letter-spacing: 2px; }
+        .urdu-name { font-size: 4rem; color: var(--accent); margin-bottom: 10px; font-family: 'Arial', sans-serif; }
+        h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        .tagline { font-size: 1.2rem; letter-spacing: 2px; color: #ccc; }
         
         section { padding: 80px 20px; max-width: 800px; margin: auto; }
         h2 { color: var(--accent); margin-bottom: 20px; border-bottom: 2px solid var(--accent); display: inline-block; }
         p { line-height: 1.8; margin-bottom: 20px; }
-        .skill-grid { display: flex; flex-wrap: wrap; gap: 10px; }
-        .skill { border: 1px solid var(--accent); padding: 10px 20px; border-radius: 5px; }
+        .badge-grid { display: flex; flex-wrap: wrap; gap: 15px; }
+        .badge { border: 1px solid var(--accent); padding: 12px 20px; border-radius: 5px; font-weight: bold; }
+        
+        /* Contact & Resume */
+        .contact-info { margin-top: 20px; }
+        .contact-item { margin-bottom: 10px; font-size: 1.1rem; }
+        .btn { display: inline-block; background: var(--accent); color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 20px; transition: 0.3s; }
+        .btn:hover { background: #cc0000; }
     </style>
 </head>
 <body>
 
     <header>
+        <div class="urdu-name slide-up">آغا محمد فواد</div>
         <h1 class="slide-up">Aga Mohammad Fawaz</h1>
-        <p class="tagline slide-up">CSE Diploma Student | Class Representative @ KGP | Aspiring IAF Technical Ground Branch</p>
+        <p class="tagline slide-up">CSE Diploma Student | Tech Enthusiast | Explorer</p>
     </header>
 
     <section class="slide-up">
         <h2>About Me</h2>
-        <p>I am a 16-year-old Computer Science Engineering student at <strong>Kashmir Government Polytechnic (KGP)</strong>, where I proudly serve as the Class Representative. My life is defined by a blend of technical discipline and intellectual curiosity.</p>
-        <p>I am deeply inspired by the existential insights found in the works of <strong>Fyodor Dostoevsky and Franz Kafka</strong>, which provide me with a unique perspective on analytical problem-solving. Beyond the screen, I am a <strong>state-level qualified badminton player</strong>, a passion that has instilled in me the grit and focus I apply to my career goals—specifically, my mission to serve in the <strong>Indian Air Force (IAF)</strong>.</p>
+        <p>I am a Computer Science Engineering student currently based in Kashmir. I view technology not just as a set of tools, but as a medium for creative problem-solving.</p>
+        <p>My journey has been shaped by diverse experiences, from my time as an <strong>Alumnus of Army Goodwill Public School, Pahalgam</strong>, to my current academic pursuits at KGP. I find deep intellectual stimulation in the literature of <strong>Dostoevsky and Kafka</strong>, which balances my technical focus with a love for philosophical inquiry.</p>
     </section>
 
     <section class="slide-up">
-        <h2>Expertise & Skills</h2>
-        <div class="skill-grid">
-            <div class="skill">C Programming</div>
-            <div class="skill">IoT Hardware & Development</div>
-            <div class="skill">Web Development (HTML/CSS)</div>
-            <div class="skill">Leadership & Coordination</div>
-            <div class="skill">Problem Solving</div>
+        <h2>Achievements & Interests</h2>
+        <div class="badge-grid">
+            <div class="badge">🏸 State-Level Badminton Qualifier</div>
+            <div class="badge">📚 Literature & Existential Philosophy</div>
+            <div class="badge">💻 C Programming & IoT</div>
+            <div class="badge">🎓 AGPS Pahalgam Alumnus</div>
         </div>
     </section>
 
     <section class="slide-up">
-        <h2>Current Focus</h2>
-        <p>I am currently refining my technical skills through intensive training at <strong>C-IIIT</strong>, focusing on IoT and advanced C-Programming. As I navigate my diploma, I am actively seeking <strong>DRDO internship opportunities</strong> to contribute my analytical skills to national defense research while preparing for my future in aviation and defense technology.</p>
+        <h2>Contact & Resume</h2>
+        <div class="contact-info">
+            <div class="contact-item">📸 <strong>Instagram:</strong> @fawaz.showkat</div>
+            <div class="contact-item">👻 <strong>Snapchat:</strong> @fawaz.showkat</div>
+            <div class="contact-item">📧 <strong>Email:</strong> [fawazaga@gmail.com]</div>
+            <div class="contact-item">📞 <strong>Phone:</strong> Available upon request</div>
+        </div>
+        <a href="#" class="btn">Download My Resume</a>
     </section>
 
     <script>

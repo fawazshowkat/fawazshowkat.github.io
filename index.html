@@ -33,4 +33,50 @@
         .badge { border: 1px solid var(--accent); padding: 10px; border-radius: 5px; font-size: 0.9rem; }
         
         .contact-item { margin-bottom: 10px; }
-        .btn { display: inline-block; background: var(--accent); color: white; padding: 12px 25px; text-decoration: none
+        .btn { display: inline-block; background: var(--accent); color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <header class="slide-up show">
+        <div class="urdu-name">آغا محمد فواد</div>
+        <div class="img-container" style="display: flex; gap: 15px; justify-content: center; margin: 20px 0;">
+            <img src="FB_IMG_1781970470137.jpg" alt="Fawaz">
+            <img src="IMG-20260501-WA0012.jpg" alt="Fawaz">
+        </div>
+        <h1>Aga Mohammad Fawaz<span class="cursor"></span></h1>
+        <p class="tagline">CSE Diploma Student | Tech Enthusiast</p>
+    </header>
+
+    <section class="slide-up">
+        <h2>About Me</h2>
+        <p>I am a Computer Science Engineering student currently based in Kashmir. My journey is shaped by a mix of technical rigor and a deep love for literature.</p>
+        <p>An <strong>Alumnus of Army Goodwill Public School, Pahalgam</strong>, and currently a student at KGP, I find deep intellectual stimulation in the literature of <strong>Dostoevsky and Kafka</strong>.</p>
+    </section>
+
+    <section class="slide-up">
+        <h2>Achievements & Interests</h2>
+        <div class="badge-grid">
+            <div class="badge">🏸 State-Level Badminton Qualifier</div>
+            <div class="badge">📚 Literature & Existential Philosophy</div>
+            <div class="badge">💻 C Programming & IoT</div>
+            <div class="badge">🎓 AGPS Pahalgam Alumnus</div>
+        </div>
+    </section>
+
+    <section class="slide-up">
+        <h2>Contact & Resume</h2>
+        <div class="contact-item">📸 <strong>Instagram:</strong> @fawaz.showkat</div>
+        <div class="contact-item">👻 <strong>Snapchat:</strong> @fawaz.showkat</div>
+        <div class="contact-item">📧 <strong>Email:</strong> fawazaga@gmail.com</div>
+        <a href="#" class="btn">Download My Resume</a>
+    </section>
+
+    <script>
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('show'); });
+        });
+        document.querySelectorAll('.slide-up').forEach((el) => observer.observe(el));
+    </script>
+</body>
+</html>

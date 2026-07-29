@@ -1,95 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Result Portal</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f7f9;
-        }
-        .header {
-            background-color: #003366;
-            color: white;
-            padding: 15px;
-            font-size: 1.2rem;
-        }
-        .container {
-            max-width: 500px;
-            margin: 40px auto;
-            background: white;
-            border: 1px solid #ddd;
-            padding: 20px;
-        }
-        .result-box {
-            border: 1px solid #ccc;
-        }
-        .result-header {
-            background-color: #444;
-            color: white;
-            padding: 15px;
-            text-align: center;
-            font-size: 1.1rem;
-        }
-        .form-group {
-            padding: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #555;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            box-sizing: border-box; /* Ensures padding doesn't affect width */
-        }
-        button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 50px;
-            color: #333;
-            font-size: 0.9rem;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="header">Result Portal</div>
-
-    <div class="container">
-        <div class="result-box">
-            <div class="result-header">
-                Check Result 2nd Sem (NEP) Session MJ26
-            </div>
-            <div class="form-group">
-                <label>Rollnumber</label>
-                <input type="text">
-                
-                <label>Registration Number</label>
-                <input type="text">
-                
-                <button type="submit">Submit</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="footer">
-        &copy; Copyright <b>JKBOTE</b>. All Rights Reserved<br>
-        Designed by IT CELL JKBOTE
-    </div>
-
-</body>
-</html>
+{
+  "name": "music-app",
+  "version": "1.0.0",
+  "description": "Premium music streaming app with YouTube Music integration",
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "backend:start": "node backend/server.js",
+    "backend:dev": "nodemon backend/server.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-native": "^0.73.0",
+    "expo": "^50.0.0",
+    "expo-av": "^13.0.0",
+    "expo-file-system": "^15.0.0",
+    "expo-sqlite": "^13.0.0",
+    "expo-secure-store": "^12.0.0",
+    "axios": "^1.6.0",
+    "react-navigation": "^6.1.9",
+    "react-navigation-bottom-tabs": "^6.5.0",
+    "@react-navigation/native": "^6.1.9",
+    "@react-navigation/stack": "^6.3.19",
+    "zustand": "^4.4.0",
+    "yt-search": "^2.10.3",
+    "ytdl-core": "^4.11.5"
+  },
+  "devDependencies": {
+    "expo-cli": "^6.0.0",
+    "jest": "^29.0.0",
+    "@testing-library/react-native": "^12.0.0"
+  }
+}

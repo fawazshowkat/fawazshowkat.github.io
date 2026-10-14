@@ -1,701 +1,1741 @@
+```html
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kinetic Strings & Percussion</title>
-<style>
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    user-select: none;
-    -webkit-user-select: none;
-  }
-  body, html {
-    width: 100%;
-    height: 100%;
-    background-color: #0d0f12;
-    color: #e2e8f0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    overflow: hidden;
-  }
-  canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
-    cursor: crosshair;
-  }
-  #ui {
-    position: absolute;
-    top: 20px;
-    left: 24px;
-    right: 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    pointer-events: none;
-    z-index: 10;
-  }
-  .hint {
-    font-size: 13px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.4);
-  }
-  .controls {
-    display: flex;
-    gap: 10px;
-    pointer-events: auto;
-  }
-  button {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    color: rgba(255, 255, 255, 0.75);
-    padding: 8px 14px;
-    border-radius: 999px;
-    font-size: 12px;
-    letter-spacing: 0.04em;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    backdrop-filter: blur(8px);
-  }
-  button:hover {
-    background: rgba(255, 255, 255, 0.12);
-    color: #fff;
-  }
-  button.active {
-    background: rgba(56, 189, 248, 0.18);
-    border-color: rgba(56, 189, 248, 0.5);
-    color: #38bdf8;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spotify Premium — Indie, R&B & Lo-Fi</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            spotify: {
+              green: '#1DB954',
+              greenHover: '#1ed760',
+              black: '#000000',
+              base: '#121212',
+              elevated: '#181818',
+              highlight: '#282828',
+              press: '#090909',
+              subdued: '#a7a7a7'
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.2) transparent;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
+
+    /* Custom Range Sliders */
+    input[type="range"].spotify-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+    input[type="range"].spotify-slider::-webkit-slider-runnable-track {
+      height: 4px;
+      border-radius: 999px;
+      background: #4d4d4d;
+    }
+    input[type="range"].spotify-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ffffff;
+      margin-top: -4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      transition: transform 0.15s ease, background-color 0.15s ease;
+    }
+    input[type="range"].spotify-slider:hover::-webkit-slider-thumb {
+      transform: scale(1.2);
+      background: #1DB954;
+    }
+
+    /* Vertical EQ Sliders */
+    .eq-slider-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 150px;
+      justify-content: center;
+    }
+    input[type="range"].eq-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 120px;
+      height: 6px;
+      background: #333;
+      border-radius: 999px;
+      transform: rotate(-90deg);
+      cursor: pointer;
+    }
+    input[type="range"].eq-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #1DB954;
+      border: 2px solid #fff;
+      box-shadow: 0 0 8px rgba(29, 185, 84, 0.8);
+    }
+
+    /* Animated Playing Bars */
+    @keyframes eqBar1 { 0%, 100% { height: 3px; } 50% { height: 14px; } }
+    @keyframes eqBar2 { 0%, 100% { height: 14px; } 30% { height: 4px; } 70% { height: 12px; } }
+    @keyframes eqBar3 { 0%, 100% { height: 6px; } 40% { height: 15px; } 80% { height: 3px; } }
+    .playing-bar-1 { animation: eqBar1 0.8s infinite ease-in-out; }
+    .playing-bar-2 { animation: eqBar2 0.7s infinite ease-in-out; }
+    .playing-bar-3 { animation: eqBar3 0.9s infinite ease-in-out; }
+
+    .lyric-line {
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .lyric-active {
+      color: #ffffff !important;
+      transform: scale(1.04);
+      text-shadow: 0 4px 24px rgba(0,0,0,0.45);
+    }
+  </style>
 </head>
-<body>
+<body class="bg-spotify-black text-white font-sans h-screen w-screen overflow-hidden flex flex-col select-none">
 
-<div id="ui">
-  <div class="hint">Strum strings • Tap shapes • Click space to launch orbs</div>
-  <div class="controls">
-    <button id="emitterBtn" class="active">Auto-Orbs: ON</button>
-    <button id="addOrbBtn">+ Launch Orb</button>
-    <button id="clearBtn">Clear Orbs & Staff</button>
+  <!-- Top / Main Workspace -->
+  <div class="flex-1 flex gap-2 p-2 pb-0 overflow-hidden relative">
+
+    <!-- Left Sidebar -->
+    <aside id="sidebar" class="w-64 md:w-72 flex-shrink-0 flex flex-col gap-2 h-full hidden sm:flex">
+      <!-- Primary Nav Box -->
+      <div class="bg-spotify-base rounded-xl p-3 flex flex-col gap-1">
+        <div class="flex items-center justify-between px-3 py-2 mb-1">
+          <div class="flex items-center gap-2.5">
+            <i class="fa-brands fa-spotify text-2xl text-spotify-green"></i>
+            <span class="font-bold tracking-tight text-base">Spotify</span>
+            <span class="text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-spotify-green/20 text-spotify-green border border-spotify-green/40">Premium</span>
+          </div>
+        </div>
+
+        <button onclick="switchView('home')" id="nav-home" class="nav-btn flex items-center gap-4 px-3 py-2.5 rounded-lg text-sm font-semibold text-white bg-spotify-highlight/60 transition">
+          <i class="fa-solid fa-house text-lg w-5 text-center"></i>
+          <span>Home</span>
+        </button>
+
+        <button onclick="focusSearch()" id="nav-search" class="nav-btn flex items-center gap-4 px-3 py-2.5 rounded-lg text-sm font-semibold text-spotify-subdued hover:text-white transition">
+          <i class="fa-solid fa-magnifying-glass text-lg w-5 text-center"></i>
+          <span>Search</span>
+        </button>
+      </div>
+
+      <!-- Library & Curated Playlists Box -->
+      <div class="bg-spotify-base rounded-xl p-3 flex-1 flex flex-col overflow-hidden">
+        <div class="flex items-center justify-between px-2 py-1.5 mb-2">
+          <button onclick="switchView('library')" class="flex items-center gap-3 text-spotify-subdued hover:text-white font-semibold text-sm transition">
+            <i class="fa-solid fa-layer-group text-lg"></i>
+            <span>Your Library</span>
+          </button>
+          <label for="localAudioInput" title="Upload Local MP3/Audio" class="cursor-pointer text-xs bg-spotify-highlight hover:bg-neutral-700 text-white px-2.5 py-1.5 rounded-full flex items-center gap-1.5 transition font-medium">
+            <i class="fa-solid fa-plus text-spotify-green"></i>
+            <span>Upload MP3</span>
+          </label>
+          <input id="localAudioInput" type="file" accept="audio/*" multiple class="hidden" onchange="handleLocalUpload(event)" />
+        </div>
+
+        <!-- Filter Pills -->
+        <div class="flex gap-1.5 px-1 mb-3 overflow-x-auto no-scrollbar">
+          <button onclick="switchView('all')" class="text-xs bg-spotify-highlight hover:bg-neutral-700 px-3 py-1 rounded-full font-medium transition">All Tracks</button>
+          <button onclick="switchView('liked')" class="text-xs bg-spotify-highlight hover:bg-neutral-700 px-3 py-1 rounded-full font-medium transition">Liked</button>
+          <button onclick="toggleEqualizerModal()" class="text-xs bg-spotify-green/15 text-spotify-green border border-spotify-green/30 hover:bg-spotify-green/25 px-3 py-1 rounded-full font-medium transition">5-Band EQ</button>
+        </div>
+
+        <!-- Playlist List -->
+        <div class="flex-1 overflow-y-auto space-y-1 pr-1" id="sidebarPlaylists">
+          <!-- Liked Songs Card -->
+          <div onclick="switchView('liked')" class="playlist-item flex items-center gap-3 p-2 rounded-lg hover:bg-spotify-highlight/60 cursor-pointer transition group">
+            <div class="w-11 h-11 rounded-md bg-gradient-to-br from-indigo-600 via-purple-500 to-pink-400 flex items-center justify-center flex-shrink-0 shadow">
+              <i class="fa-solid fa-heart text-white text-sm"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-semibold text-white truncate">Liked Songs</p>
+              <p class="text-xs text-spotify-subdued truncate">Playlist • <span id="likedCountSidebar">4 songs</span></p>
+            </div>
+          </div>
+
+          <!-- Curated Playlists -->
+          <div onclick="selectPlaylist('Late Night Indie & R&B')" class="playlist-item flex items-center gap-3 p-2 rounded-lg hover:bg-spotify-highlight/60 cursor-pointer transition">
+            <div class="w-11 h-11 rounded-md bg-gradient-to-br from-emerald-600 to-teal-900 flex items-center justify-center flex-shrink-0">
+              <i class="fa-solid fa-moon text-emerald-200 text-sm"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-medium text-white truncate">Late Night Indie & R&B</p>
+              <p class="text-xs text-spotify-subdued truncate">Hasan Raheem, Abdul Hannan</p>
+            </div>
+          </div>
+
+          <div onclick="selectPlaylist('Lo-Fi Study Beats')" class="playlist-item flex items-center gap-3 p-2 rounded-lg hover:bg-spotify-highlight/60 cursor-pointer transition">
+            <div class="w-11 h-11 rounded-md bg-gradient-to-br from-amber-500 to-rose-700 flex items-center justify-center flex-shrink-0">
+              <i class="fa-solid fa-mug-hot text-amber-100 text-sm"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-medium text-white truncate">Lo-Fi Study Beats</p>
+              <p class="text-xs text-spotify-subdued truncate">Warm Vinyl & Chill Keys</p>
+            </div>
+          </div>
+
+          <div onclick="selectPlaylist('Desi Indie Vibes')" class="playlist-item flex items-center gap-3 p-2 rounded-lg hover:bg-spotify-highlight/60 cursor-pointer transition">
+            <div class="w-11 h-11 rounded-md bg-gradient-to-br from-fuchsia-600 to-indigo-900 flex items-center justify-center flex-shrink-0">
+              <i class="fa-solid fa-guitar text-fuchsia-200 text-sm"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-medium text-white truncate">Desi Indie Vibes</p>
+              <p class="text-xs text-spotify-subdued truncate">Talwiinder, Ali Sethi, Umair</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mini Audio Engine Indicator -->
+        <div class="mt-2 pt-2.5 border-t border-white/10 flex items-center justify-between text-[11px] text-spotify-subdued px-2">
+          <div class="flex items-center gap-2">
+            <span id="synthDot" class="w-2 h-2 rounded-full bg-spotify-green"></span>
+            <span id="engineStatusText">WebAudio Synth Ready</span>
+          </div>
+          <button onclick="toggleLyricsOverlay()" class="text-spotify-green hover:underline font-medium">Lyrics</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Center View -->
+    <main id="mainContainer" class="flex-1 bg-spotify-base rounded-xl overflow-y-auto relative flex flex-col transition-colors duration-700">
+      <!-- Dynamic Ambient Top Gradient -->
+      <div id="heroGradient" class=" bg-gradient-to-b from-emerald-900/75 via-spotify-base/90 to-spotify-base transition-colors duration-700">
+
+        <!-- Sticky Top Bar -->
+        <header class="sticky top-0 z-20 backdrop-blur-md bg-black/25 px-4 md:px-6 py-3 flex items-center justify-between gap-3">
+          <!-- Mobile Menu + Search Input -->
+          <div class="flex items-center gap-2.5 flex-1 max-w-md">
+            <button onclick="switchView('home')" class="sm:hidden w-9 h-9 rounded-full bg-black/60 flex items-center justify-center text-white">
+              <i class="fa-solid fa-house text-sm"></i>
+            </button>
+            <div class="relative flex-1">
+              <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-spotify-subdued text-xs"></i>
+              <input
+                id="searchInput"
+                type="text"
+                placeholder="What do you want to play? (Artist, song, vibe...)"
+                oninput="handleSearch(this.value)"
+                class="w-full bg-[#242424] hover:bg-[#2a2a2a] focus:bg-[#2a2a2a] text-white text-xs sm:text-sm rounded-full pl-9 pr-8 py-2.5 outline-none focus:ring-2 focus:ring-white/80 transition placeholder:text-spotify-subdued"
+              />
+              <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-spotify-subdued hover:text-white text-xs">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Top Right Quick Actions -->
+          <div class="flex items-center gap-2">
+            <label for="localAudioInput" class="sm:hidden cursor-pointer bg-spotify-highlight text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1">
+              <i class="fa-solid fa-upload text-spotify-green"></i>
+              <span>MP3</span>
+            </label>
+            <button onclick="toggleEqualizerModal()" class="px-3 py-1.5 rounded-full bg-black/50 hover:bg-black/80 text-xs font-semibold flex items-center gap-1.5 border border-white/10 transition" title="5-Band Equalizer">
+              <i class="fa-solid fa-sliders text-spotify-green"></i>
+              <span class="hidden md:inline">Equalizer</span>
+            </button>
+            <button onclick="toggleLyricsOverlay()" id="topLyricsBtn" class="px-3 py-1.5 rounded-full bg-black/50 hover:bg-black/80 text-xs font-semibold flex items-center gap-1.5 border border-white/10 transition">
+              <i class="fa-solid fa-microphone-lines text-spotify-green"></i>
+              <span class="hidden md:inline">Lyrics / Visualizer</span>
+            </button>
+            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-spotify-green to-emerald-400 text-black font-bold text-xs flex items-center justify-center shadow" title="Spotify Premium Active">
+              P
+            </div>
+          </div>
+        </header>
+
+        <!-- Quick Curated Grid (6 Cards) -->
+        <section class="px-4 md:px-6 pt-2 pb-4">
+          <h2 id="greetingTitle" class="text-xl md:text-2xl font-bold tracking-tight mb-3">Good evening</h2>
+          <div class="grid grid-cols-2 lg:grid-cols-3 gap-2.5">
+            <div onclick="selectPlaylist('Late Night Indie & R&B')" class="bg-white/10 hover:bg-white/20 transition rounded-md flex items-center overflow-hidden cursor-pointer group">
+              <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-emerald-500 to-teal-900 flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-moon text-white"></i>
+              </div>
+              <span class="px-3 font-semibold text-xs sm:text-sm truncate flex-1">Late Night Indie & R&B</span>
+              <div class="w-9 h-9 rounded-full bg-spotify-green text-black flex items-center justify-center mr-3 shadow-lg opacity-0 group-hover:opacity-100 transition transform translate-y-1 group-hover:translate-y-0">
+                <i class="fa-solid fa-play text-xs ml-0.5"></i>
+              </div>
+            </div>
+
+            <div onclick="selectPlaylist('Desi Indie Vibes')" class="bg-white/10 hover:bg-white/20 transition rounded-md flex items-center overflow-hidden cursor-pointer group">
+              <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-fuchsia-600 to-indigo-900 flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-guitar text-white"></i>
+              </div>
+              <span class="px-3 font-semibold text-xs sm:text-sm truncate flex-1">Desi Indie Vibes</span>
+              <div class="w-9 h-9 rounded-full bg-spotify-green text-black flex items-center justify-center mr-3 shadow-lg opacity-0 group-hover:opacity-100 transition transform translate-y-1 group-hover:translate-y-0">
+                <i class="fa-solid fa-play text-xs ml-0.5"></i>
+              </div>
+            </div>
+
+            <div onclick="selectPlaylist('Lo-Fi Study Beats')" class="bg-white/10 hover:bg-white/20 transition rounded-md flex items-center overflow-hidden cursor-pointer group">
+              <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-amber-500 to-rose-700 flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-mug-hot text-white"></i>
+              </div>
+              <span class="px-3 font-semibold text-xs sm:text-sm truncate flex-1">Lo-Fi Study Beats</span>
+              <div class="w-9 h-9 rounded-full bg-spotify-green text-black flex items-center justify-center mr-3 shadow-lg opacity-0 group-hover:opacity-100 transition transform translate-y-1 group-hover:translate-y-0">
+                <i class="fa-solid fa-play text-xs ml-0.5"></i>
+              </div>
+            </div>
+
+            <div onclick="switchView('liked')" class="bg-white/10 hover:bg-white/20 transition rounded-md flex items-center overflow-hidden cursor-pointer group">
+              <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-indigo-600 via-purple-500 to-pink-400 flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-heart text-white"></i>
+              </div>
+              <span class="px-3 font-semibold text-xs sm:text-sm truncate flex-1">Liked Songs</span>
+              <div class="w-9 h-9 rounded-full bg-spotify-green text-black flex items-center justify-center mr-3 shadow-lg opacity-0 group-hover:opacity-100 transition transform translate-y-1 group-hover:translate-y-0">
+                <i class="fa-solid fa-play text-xs ml-0.5"></i>
+              </div>
+            </div>
+
+            <div onclick="playTrackById(1)" class="bg-white/10 hover:bg-white/20 transition rounded-md flex items-center overflow-hidden cursor-pointer group">
+              <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-cyan-500 to-blue-900 flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-wave-square text-white"></i>
+              </div>
+              <span class="px-3 font-semibold text-xs sm:text-sm truncate flex-1">Wishes & Late Calls</span>
+              <div class="w-9 h-9 rounded-full bg-spotify-green text-black flex items-center justify-center mr-3 shadow-lg opacity-0 group-hover:opacity-100 transition transform translate-y-1 group-hover:translate-y-0">
+                <i class="fa-solid fa-play text-xs ml-0.5"></i>
+              </div>
+            </div>
+
+            <div onclick="playTrackById(3)" class="bg-white/10 hover:bg-white/20 transition rounded-md flex items-center overflow-hidden cursor-pointer group">
+              <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-rose-500 to-orange-800 flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-compact-disc text-white"></i>
+              </div>
+              <span class="px-3 font-semibold text-xs sm:text-sm truncate flex-1">Bikhra Acoustic Session</span>
+              <div class="w-9 h-9 rounded-full bg-spotify-green text-black flex items-center justify-center mr-3 shadow-lg opacity-0 group-hover:opacity-100 transition transform translate-y-1 group-hover:translate-y-0">
+                <i class="fa-solid fa-play text-xs ml-0.5"></i>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Playlist / Active View Banner -->
+        <section class="px-4 md:px-6 pb-5 pt-2 flex flex-col sm:flex-row sm:items-end gap-5">
+          <div id="bannerCover" class="w-32 h-32 sm:w-44 sm:h-44 rounded-xl shadow-2xl bg-gradient-to-br from-emerald-500 via-teal-700 to-slate-900 flex flex-col items-center justify-center flex-shrink-0 border border-white/10 relative overflow-hidden">
+            <i id="bannerIcon" class="fa-solid fa-sliders text-4xl sm:text-5xl text-white/90 mb-2"></i>
+            <span class="text-[10px] uppercase tracking-widest font-bold text-white/75">Spotify Curated</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-spotify-green">
+              <span id="bannerType">Curated Playlist</span>
+              <span>•</span>
+              <span>Real-Time WebAudio Synth</span>
+            </div>
+            <h1 id="bannerTitle" class="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mt-1 mb-2 truncate">All Curated Indie & R&B</h1>
+            <p id="bannerDesc" class="text-xs sm:text-sm text-spotify-subdued line-clamp-2 max-w-2xl">
+              Dreamy guitar plucks, warm Rhodes chords, deep sub-bass, and late-night desi indie vibes inspired by Hasan Raheem, Abdul Hannan, Talwiinder, Taimour Baig, Ali Sethi & Umair.
+            </p>
+          </div>
+        </section>
+      </div>
+
+      <!-- Action Bar -->
+      <div class="px-4 md:px-6 py-3 flex items-center justify-between border-b border-white/5 bg-spotify-base/95 sticky top-[60px] z-10 backdrop-blur">
+        <div class="flex items-center gap-4">
+          <button onclick="playCurrentView()" class="w-12 h-12 rounded-full bg-spotify-green hover:bg-spotify-greenHover hover:scale-105 active:scale-95 text-black flex items-center justify-center shadow-xl transition">
+            <i id="mainActionPlayIcon" class="fa-solid fa-play text-lg ml-0.5"></i>
+          </button>
+          <button onclick="toggleShuffle()" id="mainShuffleBtn" class="text-spotify-subdued hover:text-white transition text-lg" title="Toggle Shuffle">
+            <i class="fa-solid fa-shuffle"></i>
+          </button>
+          <button onclick="switchView('all')" class="text-xs px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-spotify-subdued hover:text-white transition">
+            Show All Tracks
+          </button>
+        </div>
+
+        <!-- Live Mini Frequency Visualizer Canvas -->
+        <div class="flex items-center gap-3">
+          <span class="text-[11px] text-spotify-subdued hidden md:inline">LIVE SPECTRUM</span>
+          <canvas id="miniVisualizer" width="120" height="32" class="rounded bg-black/40 border border-white/5"></canvas>
+        </div>
+      </div>
+
+      <!-- Tracklist Table -->
+      <div class="px-2 md:px-6 py-2 flex-1">
+        <!-- Table Header -->
+        <div class="grid grid-cols-[36px_1fr_auto] md:grid-cols-[40px_1.6fr_1fr_90px_70px] gap-3 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-spotify-subdued border-b border-white/10">
+          <div class="text-center">#</div>
+          <div>Title</div>
+          <div class="hidden md:block">Playlist / Vibe</div>
+          <div class="hidden md:block text-center">Like</div>
+          <div class="text-right pr-2"><i class="fa-regular fa-clock"></i></div>
+        </div>
+
+        <!-- Track Rows Container -->
+        <div id="tracklistContainer" class="divide-y divide-white/[0.03] mt-1 pb-8"></div>
+      </div>
+
+      <!-- Synced Lyrics & Full Visualizer Overlay -->
+      <div id="lyricsOverlay" class="hidden absolute inset-0 z-30 bg-gradient-to-b from-emerald-950/95 via-neutral-900/98 to-black backdrop-blur-xl flex flex-col justify-between p-6 md:p-10 overflow-hidden">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="w-2.5 h-2.5 rounded-full bg-spotify-green animate-ping"></span>
+            <span class="text-xs uppercase tracking-widest font-bold text-spotify-green">Live Synced Lyrics & Audio Spectrum</span>
+          </div>
+          <button onclick="toggleLyricsOverlay()" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Center Lyrics Display -->
+        <div id="lyricsLinesContainer" class="my-auto max-w-3xl mx-auto w-full space-y-5 text-center py-6 overflow-y-auto max-h-[60vh] no-scrollbar">
+          <!-- Populated dynamically -->
+        </div>
+
+        <!-- Large Bottom Audio Spectrum Canvas -->
+        <div class="w-full flex flex-col items-center gap-2">
+          <canvas id="largeVisualizer" width="700" height="90" class="w-full max-w-3xl h-20 rounded-xl bg-black/30 border border-white/10"></canvas>
+          <p class="text-xs text-spotify-subdued">Click any lyric line to jump to that timestamp</p>
+        </div>
+      </div>
+    </main>
+
+    <!-- Right Drawer: Queue Panel -->
+    <aside id="queueDrawer" class="hidden w-72 bg-spotify-base rounded-xl p-4 flex-col h-full border border-white/10 flex-shrink-0">
+      <div class="flex items-center justify-between pb-3 border-b border-white/10">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-list-ul text-spotify-green"></i>
+          <h3 class="font-bold text-sm">Play Queue</h3>
+        </div>
+        <button onclick="toggleQueueDrawer()" class="text-spotify-subdued hover:text-white text-sm">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="mt-3">
+        <p class="text-xs font-bold uppercase tracking-wider text-spotify-subdued mb-2">Now Playing</p>
+        <div id="queueNowPlaying" class="p-2 rounded-lg bg-spotify-highlight/70"></div>
+      </div>
+
+      <div class="mt-4 flex-1 flex flex-col overflow-hidden">
+        <p class="text-xs font-bold uppercase tracking-wider text-spotify-subdued mb-2">Next Up</p>
+        <div id="queueNextList" class="flex-1 overflow-y-auto space-y-1.5 pr-1"></div>
+      </div>
+    </aside>
+
   </div>
-</div>
 
-<canvas id="canvas"></canvas>
+  <!-- 5-Band Equalizer Modal -->
+  <div id="eqModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-spotify-elevated border border-white/15 rounded-2xl max-w-md w-full p-6 shadow-2xl">
+      <div class="flex items-center justify-between pb-4 border-b border-white/10">
+        <div>
+          <h3 class="font-bold text-lg flex items-center gap-2">
+            <i class="fa-solid fa-sliders text-spotify-green"></i>
+            <span>5-Band Audio Equalizer</span>
+          </h3>
+          <p class="text-xs text-spotify-subdued mt-0.5">Real-time Web Audio API BiquadFilterNode chain</p>
+        </div>
+        <button onclick="toggleEqualizerModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
 
-<script>
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
+      <!-- Preset Buttons -->
+      <div class="flex flex-wrap gap-1.5 my-4">
+        <button onclick="applyEqPreset([0,0,0,0,0])" class="text-xs px-3 py-1 rounded-full bg-spotify-highlight hover:bg-spotify-green hover:text-black font-medium transition">Flat</button>
+        <button onclick="applyEqPreset([7,4,0,2,4])" class="text-xs px-3 py-1 rounded-full bg-spotify-highlight hover:bg-spotify-green hover:text-black font-medium transition">Bass Boost</button>
+        <button onclick="applyEqPreset([5,3,-2,3,6])" class="text-xs px-3 py-1 rounded-full bg-spotify-highlight hover:bg-spotify-green hover:text-black font-medium transition">Late Night R&B</button>
+        <button onclick="applyEqPreset([-2,2,5,4,1])" class="text-xs px-3 py-1 rounded-full bg-spotify-highlight hover:bg-spotify-green hover:text-black font-medium transition">Vocal Warmth</button>
+        <button onclick="applyEqPreset([4,1,-1,-2,-5])" class="text-xs px-3 py-1 rounded-full bg-spotify-highlight hover:bg-spotify-green hover:text-black font-medium transition">Lo-Fi Vinyl</button>
+      </div>
 
-let width, height, staffTop, playAreaHeight;
+      <!-- 5 Sliders -->
+      <div class="grid grid-cols-5 gap-2 bg-black/40 rounded-xl p-4 border border-white/5">
+        <div class="flex flex-col items-center">
+          <span id="eqVal0" class="text-[11px] text-spotify-green font-mono">0dB</span>
+          <div class="eq-slider-wrapper">
+            <input type="range" min="-12" max="12" step="1" value="0" class="eq-slider" id="eqBand0" oninput="updateEqBand(0, this.value)" />
+          </div>
+          <span class="text-xs font-semibold mt-1">Bass</span>
+          <span class="text-[10px] text-spotify-subdued">60Hz</span>
+        </div>
 
-// --- Web Audio API Synthesizer ---
-let audioCtx = null;
+        <div class="flex flex-col items-center">
+          <span id="eqVal1" class="text-[11px] text-spotify-green font-mono">0dB</span>
+          <div class="eq-slider-wrapper">
+            <input type="range" min="-12" max="12" step="1" value="0" class="eq-slider" id="eqBand1" oninput="updateEqBand(1, this.value)" />
+          </div>
+          <span class="text-xs font-semibold mt-1">Low-Mid</span>
+          <span class="text-[10px] text-spotify-subdued">250Hz</span>
+        </div>
 
-function initAudio() {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  if (audioCtx.state === 'suspended') {
-    audioCtx.resume();
-  }
-}
+        <div class="flex flex-col items-center">
+          <span id="eqVal2" class="text-[11px] text-spotify-green font-mono">0dB</span>
+          <div class="eq-slider-wrapper">
+            <input type="range" min="-12" max="12" step="1" value="0" class="eq-slider" id="eqBand2" oninput="updateEqBand(2, this.value)" />
+          </div>
+          <span class="text-xs font-semibold mt-1">Mid</span>
+          <span class="text-[10px] text-spotify-subdued">1kHz</span>
+        </div>
 
-function playGuitarNote(freq) {
-  initAudio();
-  const now = audioCtx.currentTime;
+        <div class="flex flex-col items-center">
+          <span id="eqVal3" class="text-[11px] text-spotify-green font-mono">0dB</span>
+          <div class="eq-slider-wrapper">
+            <input type="range" min="-12" max="12" step="1" value="0" class="eq-slider" id="eqBand3" oninput="updateEqBand(3, this.value)" />
+          </div>
+          <span class="text-xs font-semibold mt-1">High-Mid</span>
+          <span class="text-[10px] text-spotify-subdued">4kHz</span>
+        </div>
 
-  const osc1 = audioCtx.createOscillator();
-  const osc2 = audioCtx.createOscillator();
-  const filter = audioCtx.createBiquadFilter();
-  const gain = audioCtx.createGain();
+        <div class="flex flex-col items-center">
+          <span id="eqVal4" class="text-[11px] text-spotify-green font-mono">0dB</span>
+          <div class="eq-slider-wrapper">
+            <input type="range" min="-12" max="12" step="1" value="0" class="eq-slider" id="eqBand4" oninput="updateEqBand(4, this.value)" />
+          </div>
+          <span class="text-xs font-semibold mt-1">Treble</span>
+          <span class="text-[10px] text-spotify-subdued">12kHz</span>
+        </div>
+      </div>
 
-  // Warm plucked string timbre
-  osc1.type = 'triangle';
-  osc2.type = 'sawtooth';
-  osc1.frequency.setValueAtTime(freq, now);
-  osc2.frequency.setValueAtTime(freq * 1.002, now); // Slight detune for chorus warmth
+      <div class="mt-4 flex justify-end">
+        <button onclick="toggleEqualizerModal()" class="px-5 py-2 rounded-full bg-spotify-green text-black font-bold text-xs hover:bg-spotify-greenHover transition">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
 
-  filter.type = 'lowpass';
-  filter.frequency.setValueAtTime(freq * 5, now);
-  filter.frequency.exponentialRampToValueAtTime(freq * 1.2, now + 1.2);
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-spotify-green text-black font-semibold text-xs px-4 py-2.5 rounded-full shadow-xl opacity-0 pointer-events-none transition-opacity duration-300">
+    Added to Liked Songs
+  </div>
 
-  gain.gain.setValueAtTime(0.001, now);
-  gain.gain.linearRampToValueAtTime(0.28, now + 0.012);
-  gain.gain.exponentialRampToValueAtTime(0.0008, now + 1.8);
+  <!-- Bottom Interactive Player Bar -->
+  <footer class="h-[88px] bg-spotify-black px-3 sm:px-6 flex items-center justify-between gap-4 border-t border-white/10 z-40">
+    <!-- Left: Currently Playing Track Info -->
+    <div class="flex items-center gap-3 min-w-[180px] w-[30%] max-w-[300px]">
+      <div id="playerCover" onclick="toggleLyricsOverlay()" class="w-14 h-14 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-900 flex items-center justify-center flex-shrink-0 shadow-lg cursor-pointer group relative overflow-hidden">
+        <i id="playerCoverIcon" class="fa-solid fa-music text-white text-xl"></i>
+        <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+          <i class="fa-solid fa-expand text-xs text-white"></i>
+        </div>
+      </div>
+      <div class="min-w-0 flex-1">
+        <p id="playerTitle" onclick="toggleLyricsOverlay()" class="text-sm font-semibold text-white truncate hover:underline cursor-pointer">Wishes & Late Calls</p>
+        <p id="playerArtist" class="text-xs text-spotify-subdued truncate">Hasan Raheem, Umair • Indie R&B</p>
+      </div>
+      <button id="playerLikeBtn" onclick="toggleLikeCurrent()" class="text-spotify-subdued hover:text-white transition px-1.5" title="Save to Your Library">
+        <i class="fa-regular fa-heart text-base"></i>
+      </button>
+    </div>
 
-  osc1.connect(filter);
-  osc2.connect(filter);
-  filter.connect(gain);
-  gain.connect(audioCtx.destination);
+    <!-- Center: Transport Controls & Interactive Seek Bar -->
+    <div class="flex flex-col items-center max-w-xl w-[45%] flex-1">
+      <div class="flex items-center gap-5 mb-1.5">
+        <button id="shuffleBtn" onclick="toggleShuffle()" class="text-spotify-subdued hover:text-white text-sm transition relative" title="Shuffle">
+          <i class="fa-solid fa-shuffle"></i>
+        </button>
+        <button onclick="prevTrack()" class="text-spotify-subdued hover:text-white text-base transition" title="Previous">
+          <i class="fa-solid fa-backward-step"></i>
+        </button>
+        <button id="playPauseBtn" onclick="togglePlay()" class="w-9 h-9 rounded-full bg-white hover:scale-105 active:scale-95 text-black flex items-center justify-center transition shadow">
+          <i id="playPauseIcon" class="fa-solid fa-play text-sm ml-0.5"></i>
+        </button>
+        <button onclick="nextTrack()" class="text-spotify-subdued hover:text-white text-base transition" title="Next">
+          <i class="fa-solid fa-forward-step"></i>
+        </button>
+        <button id="repeatBtn" onclick="toggleRepeat()" class="text-spotify-subdued hover:text-white text-sm transition relative" title="Repeat">
+          <i class="fa-solid fa-repeat"></i>
+        </button>
+      </div>
 
-  osc1.start(now);
-  osc2.start(now);
-  osc1.stop(now + 1.85);
-  osc2.stop(now + 1.85);
-}
+      <div class="w-full flex items-center gap-2.5">
+        <span id="currentTimeEl" class="text-[11px] text-spotify-subdued font-mono w-9 text-right">0:00</span>
+        <input
+          id="seekSlider"
+          type="range"
+          min="0"
+          max="1000"
+          value="0"
+          class="spotify-slider flex-1"
+          oninput="handleSeekInput(this.value)"
+        />
+        <span id="totalTimeEl" class="text-[11px] text-spotify-subdued font-mono w-9">2:48</span>
+      </div>
+    </div>
 
-function playDrum(type) {
-  initAudio();
-  const now = audioCtx.currentTime;
+    <!-- Right: Premium Tools (Lyrics, EQ, Queue, Volume) -->
+    <div class="hidden sm:flex items-center justify-end gap-3 w-[30%] max-w-[300px]">
+      <button onclick="toggleLyricsOverlay()" id="bottomLyricsBtn" class="text-spotify-subdued hover:text-white text-sm transition p-1" title="Synced Lyrics & Visualizer">
+        <i class="fa-solid fa-microphone-lines"></i>
+      </button>
+      <button onclick="toggleEqualizerModal()" class="text-spotify-subdued hover:text-white text-sm transition p-1" title="5-Band Equalizer">
+        <i class="fa-solid fa-sliders"></i>
+      </button>
+      <button onclick="toggleQueueDrawer()" id="bottomQueueBtn" class="text-spotify-subdued hover:text-white text-sm transition p-1" title="Queue">
+        <i class="fa-solid fa-bars-staggered"></i>
+      </button>
+      <div class="flex items-center gap-2 w-28">
+        <button onclick="toggleMute()" class="text-spotify-subdued hover:text-white text-sm w-5">
+          <i id="volumeIcon" class="fa-solid fa-volume-high"></i>
+        </button>
+        <input
+          id="volumeSlider"
+          type="range"
+          min="0"
+          max="1"
+          step="0.01"
+          value="0.8"
+          class="spotify-slider w-full"
+          oninput="setVolume(this.value)"
+        />
+      </div>
+    </div>
+  </footer>
 
-  if (type === 'kick') {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.frequency.setValueAtTime(140, now);
-    osc.frequency.exponentialRampToValueAtTime(32, now + 0.35);
-    gain.gain.setValueAtTime(0.7, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start(now);
-    osc.stop(now + 0.4);
-  } else if (type === 'snare') {
-    // Noise burst
-    const bufferSize = audioCtx.sampleRate * 0.2;
-    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+  <!-- Hidden HTML5 Audio Element for Local Uploaded MP3 Files -->
+  <audio id="htmlAudioPlayer" crossorigin="anonymous"></audio>
 
-    const noise = audioCtx.createBufferSource();
-    noise.buffer = buffer;
-    const filter = audioCtx.createBiquadFilter();
-    filter.type = 'highpass';
-    filter.frequency.setValueAtTime(600, now);
+  <script>
+    /********************************************************************
+     * 1. CURATED TRACKLIST (Indie-Acoustic, R&B, Desi Indie, Lo-Fi)
+     * Each track contains musical DNA (BPM, chord progressions, melody,
+     * rhythm style, and synced lyrics) for our real-time Web Audio synth.
+     ********************************************************************/
+    const tracks = [
+      {
+        id: 1,
+        title: "Wishes & Late Calls",
+        artist: "Hasan Raheem, Talwiinder, Umair",
+        playlist: "Late Night Indie & R&B",
+        vibe: "Dreamy R&B Synth",
+        duration: 168,
+        liked: true,
+        gradient: "from-emerald-600 via-teal-800 to-slate-900",
+        icon: "fa-moon",
+        bpm: 94,
+        style: "rnb",
+        chords: [
+          [220.00, 261.63, 329.63, 392.00], // Am7
+          [174.61, 220.00, 261.63, 329.63], // Fmaj7
+          [130.81, 164.81, 196.00, 246.94], // Cmaj7
+          [196.00, 246.94, 293.66, 349.23]  // G7
+        ],
+        melody: [659.25, 587.33, 523.25, 493.88, 440.00, 523.25, 587.33, 523.25],
+        lyrics: [
+          { time: 0, text: "♪ Warm Rhodes & late night R&B groove..." },
+          { time: 12, text: "City streetlights blur through the rain on my windowpane" },
+          { time: 26, text: "Dialing your number just to hear the static breathe again" },
+          { time: 42, text: "All these wishes tangled up in midnight melodies" },
+          { time: 60, text: "You say stay a little longer, let the world slow down" },
+          { time: 82, text: "Floating on a sub-bass wave across the sleeping town" },
+          { time: 108, text: "Every promise echoes softer when the dawn is near" },
+          { time: 135, text: "Still holding onto every word you whispered in my ear ♪" }
+        ]
+      },
+      {
+        id: 2,
+        title: "Iraaday Under Neon",
+        artist: "Abdul Hannan, Rovalio",
+        playlist: "Late Night Indie & R&B",
+        vibe: "Indie Pop Groove",
+        duration: 146,
+        liked: true,
+        gradient: "from-cyan-600 via-blue-800 to-slate-900",
+        icon: "fa-bolt",
+        bpm: 100,
+        style: "indie",
+        chords: [
+          [146.83, 174.61, 220.00, 261.63], // Dm7
+          [196.00, 246.94, 293.66, 349.23], // G7
+          [130.81, 164.81, 196.00, 246.94], // Cmaj7
+          [220.00, 261.63, 329.63, 392.00]  // Am7
+        ],
+        melody: [587.33, 659.25, 523.25, 440.00, 493.88, 523.25, 587.33, 440.00],
+        lyrics: [
+          { time: 0, text: "♪ Crisp indie guitar plucks & warm analog bass..." },
+          { time: 10, text: "Kaisay kahoon mein tumse jo dil mein chhupa hai" },
+          { time: 25, text: "Neon reflections dancing on the boulevard tonight" },
+          { time: 44, text: "We didn't plan to fall this deep into the afterglow" },
+          { time: 65, text: "Check my intentions, every single step leads back to you" },
+          { time: 90, text: "Golden hour fading into velvet indigo" },
+          { time: 118, text: "Stay right here until the cassette tape runs out ♪" }
+        ]
+      },
+      {
+        id: 3,
+        title: "Bikhra (Midnight Acoustic)",
+        artist: "Abdul Hannan, Taimour Baig",
+        playlist: "Desi Indie Vibes",
+        vibe: "Acoustic & Lo-Fi",
+        duration: 175,
+        liked: true,
+        gradient: "from-rose-600 via-orange-800 to-stone-900",
+        icon: "fa-guitar",
+        bpm: 86,
+        style: "acoustic",
+        chords: [
+          [164.81, 196.00, 246.94, 293.66], // Em7
+          [130.81, 164.81, 196.00, 246.94], // Cmaj7
+          [196.00, 246.94, 293.66, 392.00], // G
+          [146.83, 185.00, 220.00, 293.66]  // D
+        ],
+        melody: [493.88, 587.33, 659.25, 587.33, 523.25, 493.88, 440.00, 392.00],
+        lyrics: [
+          { time: 0, text: "♪ Intimate acoustic fingerpicking & soft snare..." },
+          { time: 14, text: "Two coffee cups gone cold on the balcony rail" },
+          { time: 30, text: "Counting shooting stars above the quiet hills" },
+          { time: 50, text: "Pieces of a poem scattered in the autumn breeze" },
+          { time: 75, text: "Even when I'm shattered, your voice pulls me whole" },
+          { time: 105, text: "Strumming six strings till the streetlights flicker off" },
+          { time: 140, text: "Fading gently into the morning mist ♪" }
+        ]
+      },
+      {
+        id: 4,
+        title: "Dhundhala & Khayaal",
+        artist: "Talwiinder, Yashraj, Dropped Out",
+        playlist: "Desi Indie Vibes",
+        vibe: "Alt R&B / Garage",
+        duration: 158,
+        liked: false,
+        gradient: "from-purple-600 via-indigo-900 to-black",
+        icon: "fa-compact-disc",
+        bpm: 108,
+        style: "rnb",
+        chords: [
+          [185.00, 220.00, 277.18, 329.63], // F#m7
+          [146.83, 185.00, 220.00, 277.18], // Dmaj7
+          [110.00, 138.59, 164.81, 207.65], // Amaj7
+          [164.81, 207.65, 246.94, 329.63]  // E
+        ],
+        melody: [554.37, 659.25, 587.33, 493.88, 440.00, 554.37, 493.88, 440.00],
+        lyrics: [
+          { time: 0, text: "♪ Syncopated 2-step percussion & atmospheric pads..." },
+          { time: 12, text: "Everything around me feels blurry when you walk in" },
+          { time: 28, text: "Lost inside a daydream we painted in monochrome" },
+          { time: 48, text: "Bassline knocking through the rear-view mirror" },
+          { time: 70, text: "Tell me if it's real or just another midnight mirage" },
+          { time: 100, text: "Synthesizer echoes bouncing off the skyline" },
+          { time: 130, text: "Drifting past the highway lights ♪" }
+        ]
+      },
+      {
+        id: 5,
+        title: "Pasoori Lo-Fi Flip",
+        artist: "Ali Sethi, Shae Gill (Chill Tape)",
+        playlist: "Lo-Fi Study Beats",
+        vibe: "Lo-Fi Vinyl Beats",
+        duration: 162,
+        liked: true,
+        gradient: "from-amber-500 via-red-800 to-neutral-900",
+        icon: "fa-mug-hot",
+        bpm: 80,
+        style: "lofi",
+        chords: [
+          [220.00, 261.63, 329.63, 392.00], // Am7
+          [196.00, 246.94, 293.66, 392.00], // G
+          [174.61, 220.00, 261.63, 349.23], // Fmaj7
+          [164.81, 207.65, 246.94, 329.63]  // E7
+        ],
+        melody: [440.00, 493.88, 523.25, 587.33, 523.25, 493.88, 440.00, 392.00],
+        lyrics: [
+          { time: 0, text: "♪ Dusty vinyl crackle & classical ragas in lo-fi..." },
+          { time: 15, text: "Agg lavan majboori nu, aan jaan di pasoori nu" },
+          { time: 35, text: "Warm tape saturation wrapping every melody" },
+          { time: 58, text: "Flipping pages by the desk lamp at 2 AM" },
+          { time: 85, text: "Dholak rhythm reimagined on a vintage sampler" },
+          { time: 115, text: "Let the mellow chords carry your thoughts away ♪" }
+        ]
+      },
+      {
+        id: 6,
+        title: "Aisay Kaisay (Bedroom Mix)",
+        artist: "Hasan Raheem, Abdullah Kasumbi",
+        playlist: "Late Night Indie & R&B",
+        vibe: "Bedroom Indie Pop",
+        duration: 152,
+        liked: false,
+        gradient: "from-teal-500 via-emerald-800 to-zinc-900",
+        icon: "fa-headphones",
+        bpm: 92,
+        style: "indie",
+        chords: [
+          [130.81, 164.81, 196.00, 246.94], // Cmaj7
+          [220.00, 261.63, 329.63, 392.00], // Am7
+          [146.83, 174.61, 220.00, 261.63], // Dm7
+          [196.00, 246.94, 293.66, 349.23]  // G7
+        ],
+        melody: [523.25, 587.33, 659.25, 523.25, 493.88, 440.00, 392.00, 440.00],
+        lyrics: [
+          { time: 0, text: "♪ Laid-back bedroom pop groove & chorus guitar..." },
+          { time: 14, text: "Subah se shaam tak teri hi baatein" },
+          { time: 32, text: "Sunbeams catching dust motes in a quiet room" },
+          { time: 54, text: "How did we end up spinning in the same orbit?" },
+          { time: 80, text: "Soft synth bells chiming over a lazy snare" },
+          { time: 112, text: "Keep this track on repeat all weekend long ♪" }
+        ]
+      },
+      {
+        id: 7,
+        title: "Leave Me Alone (3AM Tape)",
+        artist: "Taimour Baig, Raffey Anwar",
+        playlist: "Lo-Fi Study Beats",
+        vibe: "Melancholic Lo-Fi",
+        duration: 164,
+        liked: false,
+        gradient: "from-indigo-500 via-slate-800 to-black",
+        icon: "fa-cloud-rain",
+        bpm: 76,
+        style: "lofi",
+        chords: [
+          [130.81, 155.56, 196.00, 233.08], // Cm7
+          [174.61, 207.65, 261.63, 311.13], // Fm7
+          [116.54, 146.83, 174.61, 220.00], // Bbmaj7
+          [155.56, 196.00, 233.08, 293.66]  // Ebmaj7
+        ],
+        melody: [523.25, 466.16, 392.00, 349.23, 311.13, 349.23, 392.00, 311.13],
+        lyrics: [
+          { time: 0, text: "♪ Rainy windowpane lo-fi piano & deep sub..." },
+          { time: 16, text: "Writing verses in a notebook by the window" },
+          { time: 36, text: "Every chord progression feels like a memory" },
+          { time: 60, text: "Sometimes solitude is the loudest melody" },
+          { time: 92, text: "Let the Rhodes piano speak when words fall short" },
+          { time: 128, text: "Peaceful silence between the snare hits ♪" }
+        ]
+      },
+      {
+        id: 8,
+        title: "Chan Kithan ( Velvet Synth )",
+        artist: "Ali Sethi (Indie Electronic Mix)",
+        playlist: "Desi Indie Vibes",
+        vibe: "Folk Fusion Synth",
+        duration: 180,
+        liked: false,
+        gradient: "from-fuchsia-600 via-purple-900 to-black",
+        icon: "fa-star",
+        bpm: 88,
+        style: "acoustic",
+        chords: [
+          [146.83, 174.61, 220.00, 261.63], // Dm7
+          [116.54, 146.83, 174.61, 220.00], // Bbmaj7
+          [130.81, 164.81, 196.00, 261.63], // C
+          [146.83, 174.61, 220.00, 293.66]  // Dm
+        ],
+        melody: [587.33, 659.25, 698.46, 659.25, 587.33, 523.25, 440.00, 587.33],
+        lyrics: [
+          { time: 0, text: "♪ Atmospheric folk melody meets modern arpeggios..." },
+          { time: 18, text: "Chan kithan guzaari aayi raat ve" },
+          { time: 40, text: "Where did the moon spend the entire night?" },
+          { time: 68, text: "Silk melodies weaving through warm analog filters" },
+          { time: 100, text: "Timeless poetry carried on a modern breeze" },
+          { time: 140, text: "Stars shimmering over the courtyard ♪" }
+        ]
+      }
+    ];
 
-    const gain = audioCtx.createGain();
-    gain.gain.setValueAtTime(0.35, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+    /********************************************************************
+     * 2. APPLICATION STATE & WEB AUDIO API GRAPH (WITH 5-BAND EQ)
+     ********************************************************************/
+    let currentView = 'all';
+    let searchQuery = '';
+    let currentTrackIndex = 0;
+    let isPlaying = false;
+    let isShuffle = false;
+    let repeatMode = 0; // 0: off, 1: repeat all, 2: repeat one
+    let currentTime = 0;
+    let masterVolume = 0.8;
+    let isMuted = false;
 
-    noise.connect(filter);
-    filter.connect(gain);
-    gain.connect(audioCtx.destination);
-    noise.start(now);
+    // Web Audio API Nodes
+    let audioCtx = null;
+    let masterGain = null;
+    let analyser = null;
+    let eqFilters = [];
+    let htmlAudioSource = null;
+    let synthStepTimer = null;
+    let progressTimer = null;
+    let stepIndex = 0;
 
-    // Body tone
-    const osc = audioCtx.createOscillator();
-    const oscGain = audioCtx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(180, now);
-    oscGain.gain.setValueAtTime(0.3, now);
-    oscGain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-    osc.connect(oscGain);
-    oscGain.connect(audioCtx.destination);
-    osc.start(now);
-    osc.stop(now + 0.1);
-  } else if (type === 'hat') {
-    const bufferSize = audioCtx.sampleRate * 0.08;
-    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    const eqFrequencies = [60, 250, 1000, 4000, 12000];
+    const htmlAudio = document.getElementById('htmlAudioPlayer');
 
-    const noise = audioCtx.createBufferSource();
-    noise.buffer = buffer;
+    function initAudioEngine() {
+      if (audioCtx) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        return;
+      }
 
-    const filter = audioCtx.createBiquadFilter();
-    filter.type = 'highpass';
-    filter.frequency.setValueAtTime(6500, now);
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      masterGain = audioCtx.createGain();
+      masterGain.gain.value = isMuted ? 0 : masterVolume;
 
-    const gain = audioCtx.createGain();
-    gain.gain.setValueAtTime(0.22, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 128;
+      analyser.smoothingTimeConstant = 0.82;
 
-    noise.connect(filter);
-    filter.connect(gain);
-    gain.connect(audioCtx.destination);
-    noise.start(now);
-  }
-}
+      // Create 5-Band Equalizer BiquadFilter chain
+      eqFilters = eqFrequencies.map((freq, idx) => {
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = idx === 0 ? 'lowshelf' : idx === eqFrequencies.length - 1 ? 'highshelf' : 'peaking';
+        filter.frequency.value = freq;
+        filter.Q.value = 1.1;
+        filter.gain.value = Number(document.getElementById(`eqBand${idx}`).value || 0);
+        return filter;
+      });
 
-// --- Musical Elements ---
-// E4, D4, B3, G3, E3, C3 (Harmonious minor/pentatonic voicing)
-// staffStep: 0 = bottom line (E4), positive = steps upward on the 5-line staff
-const stringDefs = [
-  { name: 'E5', freq: 659.25, step: 7, color: '#38bdf8' },
-  { name: 'B4', freq: 493.88, step: 4, color: '#818cf8' },
-  { name: 'G4', freq: 392.00, step: 2, color: '#c084fc' },
-  { name: 'E4', freq: 329.63, step: 0, color: '#f472b6' },
-  { name: 'D4', freq: 293.66, step: -1, color: '#fb7185' },
-  { name: 'A3', freq: 220.00, step: -3, color: '#fbbf24' }
-];
+      // Chain: eqFilter[0] -> [1] -> [2] -> [3] -> [4] -> masterGain -> analyser -> destination
+      for (let i = 0; i < eqFilters.length - 1; i++) {
+        eqFilters[i].connect(eqFilters[i + 1]);
+      }
+      eqFilters[eqFilters.length - 1].connect(masterGain);
+      masterGain.connect(analyser);
+      analyser.connect(audioCtx.destination);
 
-let strings = [];
-let drums = [];
-let orbs = [];
-let sheetNotes = [];
-let ripples = [];
-
-let autoEmit = true;
-let lastEmitTime = 0;
-
-function resize() {
-  width = canvas.width = window.innerWidth;
-  height = canvas.height = window.innerHeight;
-  staffTop = height * 0.74;
-  playAreaHeight = staffTop - 40;
-
-  // Position 6 horizontal guitar strings on the left/center
-  const stringStartX = width * 0.08;
-  const stringEndX = width * 0.58;
-  const topY = playAreaHeight * 0.22;
-  const spacing = (playAreaHeight * 0.65) / (stringDefs.length - 1);
-
-  strings = stringDefs.map((def, i) => ({
-    ...def,
-    x1: stringStartX,
-    x2: stringEndX,
-    y: topY + i * spacing,
-    amp: 0,
-    vel: 0,
-    nodeX: (stringStartX + stringEndX) / 2,
-    nodeRadius: 16
-  }));
-
-  // Position 3 geometric drum shapes on the right
-  const drumX = width * 0.78;
-  drums = [
-    {
-      name: 'Hi-Hat',
-      drumType: 'hat',
-      shape: 'triangle',
-      x: drumX,
-      y: playAreaHeight * 0.26,
-      radius: 38,
-      color: '#fde047',
-      step: 8,
-      pulse: 0
-    },
-    {
-      name: 'Snare',
-      drumType: 'snare',
-      shape: 'diamond',
-      x: drumX + 45,
-      y: playAreaHeight * 0.53,
-      radius: 42,
-      color: '#fb923c',
-      step: 4,
-      pulse: 0
-    },
-    {
-      name: 'Kick',
-      drumType: 'kick',
-      shape: 'hexagon',
-      x: drumX - 15,
-      y: playAreaHeight * 0.80,
-      radius: 48,
-      color: '#f87171',
-      step: 0,
-      pulse: 0
-    }
-  ];
-}
-
-window.addEventListener('resize', resize);
-resize();
-
-// --- Note & Ripple Triggers ---
-function triggerString(s, hitX) {
-  playGuitarNote(s.freq);
-  s.amp = 24;
-  const rippleX = hitX || s.nodeX;
-  ripples.push({ x: rippleX, y: s.y, r: 6, maxR: 45, color: s.color, alpha: 1 });
-  addSheetNote(s.step, s.color, 'note', s.name);
-}
-
-function triggerDrum(d) {
-  playDrum(d.drumType);
-  d.pulse = 14;
-  ripples.push({ x: d.x, y: d.y, r: d.radius * 0.8, maxR: d.radius * 1.9, color: d.color, alpha: 1 });
-  addSheetNote(d.step, d.color, 'drum', d.name);
-}
-
-function addSheetNote(step, color, kind, label) {
-  sheetNotes.push({
-    x: width * 0.88,
-    step,
-    color,
-    kind,
-    label,
-    alpha: 1,
-    born: performance.now()
-  });
-}
-
-// --- Orb Spawning ---
-function spawnOrb(x, y, vx, vy) {
-  const angle = Math.random() * Math.PI * 2;
-  const speed = 2.6 + Math.random() * 1.8;
-  orbs.push({
-    x: x !== undefined ? x : width * 0.08 + Math.random() * (width * 0.8),
-    y: y !== undefined ? y : 70,
-    vx: vx !== undefined ? vx : Math.cos(angle) * speed,
-    vy: vy !== undefined ? vy : Math.abs(Math.sin(angle)) * speed + 1.2,
-    r: 7,
-    cooldowns: new Map()
-  });
-  if (orbs.length > 10) orbs.shift();
-}
-
-// Spawn initial orb
-spawnOrb(width * 0.35, 90, 3.2, 2.4);
-
-// --- Pointer Interaction ---
-let pointer = { x: 0, y: 0, prevX: 0, prevY: 0, down: false };
-
-function segmentsIntersect(x1, y1, x2, y2, x3, y3, x4, y4) {
-  const denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
-  if (denom === 0) return false;
-  const ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denom;
-  const ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denom;
-  return ua >= 0 && ua <= 1 && ub >= 0 && ub <= 1;
-}
-
-canvas.addEventListener('pointerdown', (e) => {
-  initAudio();
-  pointer.down = true;
-  pointer.x = pointer.prevX = e.clientX;
-  pointer.y = pointer.prevY = e.clientY;
-
-  // Check if clicked on a drum shape
-  let hitSomething = false;
-  for (const d of drums) {
-    const dist = Math.hypot(pointer.x - d.x, pointer.y - d.y);
-    if (dist <= d.radius + 8) {
-      triggerDrum(d);
-      hitSomething = true;
-    }
-  }
-
-  // Check if clicked near a string resonating node
-  for (const s of strings) {
-    const dist = Math.hypot(pointer.x - s.nodeX, pointer.y - s.y);
-    if (dist <= s.nodeRadius + 8) {
-      triggerString(s, s.nodeX);
-      hitSomething = true;
-    }
-  }
-
-  // Otherwise spawn a moving orb where clicked (if in upper play area)
-  if (!hitSomething && pointer.y < staffTop - 20 && pointer.y > 60) {
-    const angle = (Math.random() - 0.5) * Math.PI * 1.4;
-    spawnOrb(pointer.x, pointer.y, Math.sin(angle) * 3.5, Math.cos(angle) * 3.2);
-  }
-});
-
-canvas.addEventListener('pointermove', (e) => {
-  pointer.prevX = pointer.x;
-  pointer.prevY = pointer.y;
-  pointer.x = e.clientX;
-  pointer.y = e.clientY;
-
-  // Strum strings by moving across them
-  for (const s of strings) {
-    if (segmentsIntersect(pointer.prevX, pointer.prevY, pointer.x, pointer.y, s.x1, s.y, s.x2, s.y)) {
-      triggerString(s, pointer.x);
-    }
-  }
-
-  // Pass over drum shapes with mouse while dragging
-  if (pointer.down) {
-    for (const d of drums) {
-      const prevDist = Math.hypot(pointer.prevX - d.x, pointer.prevY - d.y);
-      const currDist = Math.hypot(pointer.x - d.x, pointer.y - d.y);
-      if (prevDist > d.radius && currDist <= d.radius) {
-        triggerDrum(d);
+      // Connect HTML5 Audio Element (for uploaded local MP3s) into our EQ + Visualizer chain
+      try {
+        htmlAudioSource = audioCtx.createMediaElementSource(htmlAudio);
+        htmlAudioSource.connect(eqFilters[0]);
+      } catch (e) {
+        // Fallback if already connected
       }
     }
-  }
-});
 
-window.addEventListener('pointerup', () => {
-  pointer.down = false;
-});
-
-// --- UI Buttons ---
-const emitterBtn = document.getElementById('emitterBtn');
-emitterBtn.addEventListener('click', () => {
-  initAudio();
-  autoEmit = !autoEmit;
-  emitterBtn.textContent = `Auto-Orbs: ${autoEmit ? 'ON' : 'OFF'}`;
-  emitterBtn.classList.toggle('active', autoEmit);
-});
-
-document.getElementById('addOrbBtn').addEventListener('click', () => {
-  initAudio();
-  spawnOrb();
-});
-
-document.getElementById('clearBtn').addEventListener('click', () => {
-  orbs = [];
-  sheetNotes = [];
-});
-
-// --- Polygon Drawing Helper ---
-function drawPolygon(x, y, radius, sides, rotation = 0) {
-  ctx.beginPath();
-  for (let i = 0; i < sides; i++) {
-    const a = rotation + (i * 2 * Math.PI) / sides;
-    const px = x + Math.cos(a) * radius;
-    const py = y + Math.sin(a) * radius;
-    if (i === 0) ctx.moveTo(px, py);
-    else ctx.lineTo(px, py);
-  }
-  ctx.closePath();
-}
-
-// --- Main Animation Loop ---
-function animate(now) {
-  ctx.clearRect(0, 0, width, height);
-
-  // Auto-spawn gentle orbs periodically if enabled
-  if (autoEmit && orbs.length < 4 && now - lastEmitTime > 3200) {
-    spawnOrb();
-    lastEmitTime = now;
-  }
-
-  // 1. Draw & Update Guitar Strings
-  for (const s of strings) {
-    // Spring damping for string vibration
-    s.amp *= 0.91;
-    const offset = Math.sin(now * 0.065) * s.amp;
-
-    // String line
-    ctx.beginPath();
-    ctx.moveTo(s.x1, s.y);
-    ctx.quadraticCurveTo((s.x1 + s.x2) / 2, s.y + offset, s.x2, s.y);
-    ctx.strokeStyle = s.amp > 0.8 ? s.color : 'rgba(255, 255, 255, 0.22)';
-    ctx.lineWidth = 1.5 + (s.amp / 12);
-    ctx.stroke();
-
-    // Endpoints
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
-    ctx.beginPath();
-    ctx.arc(s.x1, s.y, 3, 0, Math.PI * 2);
-    ctx.arc(s.x2, s.y, 3, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Resonator shape in the center of the string
-    ctx.save();
-    ctx.translate(s.nodeX, s.y + offset * 0.5);
-    ctx.rotate(Math.PI / 4);
-    const sz = s.nodeRadius + s.amp * 0.25;
-    ctx.strokeStyle = s.color;
-    ctx.fillStyle = 'rgba(13, 15, 18, 0.85)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.rect(-sz / 2, -sz / 2, sz, sz);
-    ctx.fill();
-    ctx.stroke();
-    ctx.restore();
-
-    // Subtle note label
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-    ctx.font = '11px sans-serif';
-    ctx.fillText(s.name, s.x1 - 28, s.y + 4);
-  }
-
-  // 2. Draw & Update Drum Shapes
-  for (const d of drums) {
-    d.pulse *= 0.88;
-    const r = d.radius + d.pulse;
-
-    ctx.save();
-    ctx.strokeStyle = d.color;
-    ctx.fillStyle = d.pulse > 1 ? `${d.color}22` : 'rgba(255, 255, 255, 0.02)';
-    ctx.lineWidth = 2 + d.pulse * 0.15;
-
-    if (d.shape === 'triangle') {
-      drawPolygon(d.x, d.y, r, 3, -Math.PI / 2);
-    } else if (d.shape === 'diamond') {
-      drawPolygon(d.x, d.y, r, 4, 0);
-    } else {
-      drawPolygon(d.x, d.y, r, 6, Math.PI / 6);
+    function getAudioInputNode() {
+      initAudioEngine();
+      return eqFilters[0];
     }
-    ctx.fill();
-    ctx.stroke();
 
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-    ctx.font = '11px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(d.name.toUpperCase(), d.x, d.y + 4);
-    ctx.restore();
-  }
+    /********************************************************************
+     * 3. REAL-TIME PROCEDURAL LO-FI / R&B / INDIE AUDIO SYNTHESIZER
+     ********************************************************************/
+    function triggerWarmChord(freqs, duration = 1.6, style = 'rnb') {
+      const now = audioCtx.currentTime;
+      const dest = getAudioInputNode();
 
-  // 3. Update & Draw Moving Orbs
-  for (const orb of orbs) {
-    const prevX = orb.x;
-    const prevY = orb.y;
+      freqs.forEach((f, idx) => {
+        const osc = audioCtx.createOscillator();
+        const filter = audioCtx.createBiquadFilter();
+        const gain = audioCtx.createGain();
 
-    orb.x += orb.vx;
-    orb.y += orb.vy;
+        osc.type = style === 'lofi' ? 'triangle' : 'sawtooth';
+        // Slight detune for lush Rhodes/indie chorus feel
+        osc.frequency.setValueAtTime(f * (1 + (idx - 1.5) * 0.0018), now);
 
-    // Bounce off walls within the play area
-    if (orb.x < orb.r || orb.x > width - orb.r) orb.vx *= -1;
-    if (orb.y < 55 || orb.y > staffTop - 25) orb.vy *= -1;
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(style === 'lofi' ? 950 : 1650, now);
+        filter.frequency.exponentialRampToValueAtTime(420, now + duration);
 
-    // Check if orb crossed any guitar string
-    for (const s of strings) {
-      const lastHit = orb.cooldowns.get(s) || 0;
-      if (now - lastHit > 180) {
-        if (segmentsIntersect(prevX, prevY, orb.x, orb.y, s.x1, s.y, s.x2, s.y)) {
-          triggerString(s, orb.x);
-          orb.cooldowns.set(s, now);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.linearRampToValueAtTime(0.042, now + 0.06);
+        gain.gain.exponentialRampToValueAtTime(0.0005, now + duration);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(dest);
+
+        osc.start(now);
+        osc.stop(now + duration + 0.05);
+      });
+    }
+
+    function triggerSubBass(freq, duration = 0.45) {
+      const now = audioCtx.currentTime;
+      const dest = getAudioInputNode();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq / 2, now);
+
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.16, now + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+      osc.connect(gain);
+      gain.connect(dest);
+      osc.start(now);
+      osc.stop(now + duration + 0.02);
+    }
+
+    function triggerGuitarPluck(freq, duration = 0.55) {
+      const now = audioCtx.currentTime;
+      const dest = getAudioInputNode();
+
+      const osc = audioCtx.createOscillator();
+      const filter = audioCtx.createBiquadFilter();
+      const gain = audioCtx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, now);
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(2800, now);
+      filter.frequency.exponentialRampToValueAtTime(600, now + duration);
+
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.075, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0008, now + duration);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(dest);
+
+      osc.start(now);
+      osc.stop(now + duration + 0.03);
+    }
+
+    function triggerPercussion(type) {
+      const now = audioCtx.currentTime;
+      const dest = getAudioInputNode();
+
+      if (type === 'kick') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.frequency.setValueAtTime(125, now);
+        osc.frequency.exponentialRampToValueAtTime(36, now + 0.22);
+        gain.gain.setValueAtTime(0.28, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        osc.connect(gain);
+        gain.connect(dest);
+        osc.start(now);
+        osc.stop(now + 0.26);
+      } else if (type === 'snare') {
+        const bufSize = audioCtx.sampleRate * 0.14;
+        const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.35));
+
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = buf;
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 1400;
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.002, now + 0.14);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(dest);
+        noise.start(now);
+      } else if (type === 'hat') {
+        const bufSize = audioCtx.sampleRate * 0.05;
+        const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = buf;
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'highpass';
+        filter.frequency.value = 6500;
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.045, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(dest);
+        noise.start(now);
+      }
+    }
+
+    function startProceduralSequencer(track) {
+      stopProceduralSequencer();
+      initAudioEngine();
+
+      const stepMs = (60 / track.bpm / 2) * 1000; // 8th-note steps
+      stepIndex = 0;
+
+      const runStep = () => {
+        if (!isPlaying) return;
+        const barStep = stepIndex % 8;
+        const chordIdx = Math.floor(stepIndex / 8) % track.chords.length;
+        const currentChord = track.chords[chordIdx];
+
+        // Trigger warm Rhodes/pad chord on beat 1 of every bar
+        if (barStep === 0) {
+          triggerWarmChord(currentChord, (stepMs * 7.5) / 1000, track.style);
+        }
+
+        // Sub-bass pattern
+        if (barStep === 0 || barStep === 3 || barStep === 6) {
+          triggerSubBass(currentChord[0], (stepMs * 2.2) / 1000);
+        }
+
+        // Drum groove based on track style
+        if (barStep === 0 || (track.style === 'rnb' && barStep === 5)) {
+          triggerPercussion('kick');
+        }
+        if (barStep === 4) {
+          triggerPercussion('snare');
+        }
+        if (barStep % 2 === 1 || track.style !== 'acoustic') {
+          triggerPercussion('hat');
+        }
+
+        // Indie guitar / lead melody pluck
+        const melodyNote = track.melody[stepIndex % track.melody.length];
+        if (barStep === 0 || barStep === 2 || barStep === 4 || barStep === 6 || (stepIndex % 3 === 0)) {
+          triggerGuitarPluck(melodyNote, (stepMs * 1.8) / 1000);
+        }
+
+        stepIndex++;
+      };
+
+      runStep();
+      synthStepTimer = setInterval(runStep, stepMs);
+    }
+
+    function stopProceduralSequencer() {
+      if (synthStepTimer) {
+        clearInterval(synthStepTimer);
+        synthStepTimer = null;
+      }
+    }
+
+    /********************************************************************
+     * 4. PLAYBACK CONTROLLER (Supports Synth Tracks + Local MP3s)
+     ********************************************************************/
+    function getCurrentTrack() {
+      return tracks[currentTrackIndex] || tracks[0];
+    }
+
+    function playTrackById(id) {
+      const idx = tracks.findIndex(t => t.id === id);
+      if (idx !== -1) {
+        currentTrackIndex = idx;
+        currentTime = 0;
+        startPlayback();
+      }
+    }
+
+    function startPlayback() {
+      initAudioEngine();
+      const track = getCurrentTrack();
+      isPlaying = true;
+
+      stopProceduralSequencer();
+      htmlAudio.pause();
+
+      if (track.isLocal && track.audioUrl) {
+        if (htmlAudio.src !== track.audioUrl) {
+          htmlAudio.src = track.audioUrl;
+        }
+        htmlAudio.currentTime = currentTime;
+        htmlAudio.play().catch(() => {});
+        document.getElementById('engineStatusText').textContent = 'Local MP3 Audio';
+      } else {
+        startProceduralSequencer(track);
+        document.getElementById('engineStatusText').textContent = `Synth: ${track.vibe}`;
+      }
+
+      startProgressLoop();
+      updatePlayerUI();
+      renderTracklist();
+      renderQueue();
+      renderLyrics();
+    }
+
+    function pausePlayback() {
+      isPlaying = false;
+      stopProceduralSequencer();
+      htmlAudio.pause();
+      if (progressTimer) clearInterval(progressTimer);
+      updatePlayerUI();
+      renderTracklist();
+    }
+
+    function togglePlay() {
+      if (isPlaying) {
+        pausePlayback();
+      } else {
+        startPlayback();
+      }
+    }
+
+    function playCurrentView() {
+      const filtered = getFilteredTracks();
+      if (filtered.length > 0) {
+        const current = getCurrentTrack();
+        const inView = filtered.some(t => t.id === current.id);
+        if (!inView) {
+          playTrackById(filtered[0].id);
+        } else {
+          togglePlay();
         }
       }
     }
 
-    // Check if orb moved past / through any drum shape
-    for (const d of drums) {
-      const lastHit = orb.cooldowns.get(d) || 0;
-      const dist = Math.hypot(orb.x - d.x, orb.y - d.y);
-      if (dist < d.radius + orb.r && now - lastHit > 320) {
-        triggerDrum(d);
-        orb.cooldowns.set(d, now);
-        // Gentle deflection
-        const angle = Math.atan2(orb.y - d.y, orb.x - d.x);
-        const speed = Math.hypot(orb.vx, orb.vy);
-        orb.vx = Math.cos(angle) * speed;
-        orb.vy = Math.sin(angle) * speed;
-      }
-    }
+    function nextTrack() {
+      const filtered = getFilteredTracks();
+      const pool = filtered.length > 0 ? filtered : tracks;
 
-    // Draw orb glow
-    ctx.beginPath();
-    ctx.arc(orb.x, orb.y, orb.r, 0, Math.PI * 2);
-    ctx.fillStyle = '#ffffff';
-    ctx.shadowColor = '#38bdf8';
-    ctx.shadowBlur = 14;
-    ctx.fill();
-    ctx.shadowBlur = 0;
-  }
-
-  // 4. Draw Ripples
-  for (let i = ripples.length - 1; i >= 0; i--) {
-    const rp = ripples[i];
-    rp.r += (rp.maxR - rp.r) * 0.14;
-    rp.alpha *= 0.90;
-
-    ctx.beginPath();
-    ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2);
-    ctx.strokeStyle = rp.color;
-    ctx.globalAlpha = rp.alpha;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-
-    if (rp.alpha < 0.03) ripples.splice(i, 1);
-  }
-
-  // 5. Draw Scrolling Sheet Music Staff at the Bottom
-  const lineSpacing = 13;
-  const staffLines = 5;
-  const bottomLineY = staffTop + 45 + (staffLines - 1) * lineSpacing;
-  const staffLeft = width * 0.06;
-  const staffRight = width * 0.94;
-
-  // Draw the 5 horizontal staff lines
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
-  ctx.lineWidth = 1;
-  for (let i = 0; i < staffLines; i++) {
-    const ly = bottomLineY - i * lineSpacing;
-    ctx.beginPath();
-    ctx.moveTo(staffLeft, ly);
-    ctx.lineTo(staffRight, ly);
-    ctx.stroke();
-  }
-
-  // Minimalist Treble Clef & Playhead bar
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
-  ctx.font = '46px serif';
-  ctx.fillText('𝄞', staffLeft + 10, bottomLineY - 8);
-
-  // Subtle entry line on the right where new notes appear
-  ctx.strokeStyle = 'rgba(56, 189, 248, 0.25)';
-  ctx.beginPath();
-  ctx.moveTo(width * 0.88, bottomLineY - 4 * lineSpacing - 12);
-  ctx.lineTo(width * 0.88, bottomLineY + 12);
-  ctx.stroke();
-
-  // Update & Draw Sheet Music Notes
-  for (let i = sheetNotes.length - 1; i >= 0; i--) {
-    const n = sheetNotes[i];
-    n.x -= 1.6; // Scroll left across the staff
-
-    const ny = bottomLineY - n.step * (lineSpacing / 2);
-
-    // Fade out as notes approach the clef on the left
-    if (n.x < staffLeft + 75) {
-      n.alpha -= 0.05;
-    }
-
-    ctx.save();
-    ctx.globalAlpha = Math.max(0, n.alpha);
-    ctx.strokeStyle = n.color;
-    ctx.fillStyle = n.color;
-
-    // Draw Ledger line if below the bottom line (e.g. A3)
-    if (n.step <= -2) {
-      const ledgerY = bottomLineY + lineSpacing;
-      ctx.beginPath();
-      ctx.moveTo(n.x - 12, ledgerY);
-      ctx.lineTo(n.x + 12, ledgerY);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-      ctx.stroke();
-      ctx.strokeStyle = n.color;
-    }
-
-    if (n.kind === 'note') {
-      // Filled oval notehead
-      ctx.beginPath();
-      ctx.ellipse(n.x, ny, 7, 5, -0.3, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Note stem
-      ctx.lineWidth = 1.8;
-      ctx.beginPath();
-      if (n.step >= 4) {
-        ctx.moveTo(n.x - 6, ny);
-        ctx.lineTo(n.x - 6, ny + 28);
+      if (isShuffle && pool.length > 1) {
+        let randomTrack = pool[Math.floor(Math.random() * pool.length)];
+        currentTrackIndex = tracks.findIndex(t => t.id === randomTrack.id);
       } else {
-        ctx.moveTo(n.x + 6, ny);
-        ctx.lineTo(n.x + 6, ny - 28);
+        const curPos = pool.findIndex(t => t.id === getCurrentTrack().id);
+        const nextPos = (curPos + 1) % pool.length;
+        currentTrackIndex = tracks.findIndex(t => t.id === pool[nextPos].id);
       }
-      ctx.stroke();
-    } else {
-      // Percussion X-notehead
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(n.x - 5, ny - 5);
-      ctx.lineTo(n.x + 5, ny + 5);
-      ctx.moveTo(n.x + 5, ny - 5);
-      ctx.lineTo(n.x - 5, ny + 5);
-      ctx.stroke();
-
-      // Stem
-      ctx.beginPath();
-      ctx.moveTo(n.x + 5, ny - 5);
-      ctx.lineTo(n.x + 5, ny - 28);
-      ctx.stroke();
+      currentTime = 0;
+      startPlayback();
     }
 
-    // Small pitch/drum label underneath or above
-    ctx.font = '10px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-    ctx.fillText(n.label, n.x, bottomLineY + 26);
-
-    ctx.restore();
-
-    if (n.alpha <= 0) {
-      sheetNotes.splice(i, 1);
+    function prevTrack() {
+      if (currentTime > 4) {
+        currentTime = 0;
+        if (getCurrentTrack().isLocal) htmlAudio.currentTime = 0;
+        updateSeekUI();
+        return;
+      }
+      const filtered = getFilteredTracks();
+      const pool = filtered.length > 0 ? filtered : tracks;
+      const curPos = pool.findIndex(t => t.id === getCurrentTrack().id);
+      const prevPos = (curPos - 1 + pool.length) % pool.length;
+      currentTrackIndex = tracks.findIndex(t => t.id === pool[prevPos].id);
+      currentTime = 0;
+      startPlayback();
     }
-  }
 
-  requestAnimationFrame(animate);
-}
+    function startProgressLoop() {
+      if (progressTimer) clearInterval(progressTimer);
+      progressTimer = setInterval(() => {
+        if (!isPlaying) return;
+        const track = getCurrentTrack();
 
-requestAnimationFrame(animate);
-</script>
+        if (track.isLocal) {
+          currentTime = htmlAudio.currentTime || 0;
+          if (htmlAudio.duration && !isNaN(htmlAudio.duration)) {
+            track.duration = Math.floor(htmlAudio.duration);
+          }
+        } else {
+          currentTime += 0.25;
+        }
+
+        if (currentTime >= track.duration) {
+          if (repeatMode === 2) {
+            currentTime = 0;
+            startPlayback();
+          } else {
+            nextTrack();
+          }
+        } else {
+          updateSeekUI();
+          highlightActiveLyric();
+        }
+      }, 250);
+    }
+
+    function handleSeekInput(val) {
+      const track = getCurrentTrack();
+      const ratio = Number(val) / 1000;
+      currentTime = ratio * track.duration;
+      if (track.isLocal) {
+        htmlAudio.currentTime = currentTime;
+      }
+      updateSeekUI();
+      highlightActiveLyric();
+    }
+
+    function seekToSeconds(sec) {
+      const track = getCurrentTrack();
+      currentTime = Math.min(Math.max(0, sec), track.duration - 1);
+      if (track.isLocal) {
+        htmlAudio.currentTime = currentTime;
+      }
+      if (!isPlaying) startPlayback();
+      updateSeekUI();
+      highlightActiveLyric();
+    }
+
+    /********************************************************************
+     * 5. EQUALIZER, VOLUME & LOCAL MP3 UPLOAD HANDLERS
+     ********************************************************************/
+    function updateEqBand(bandIdx, dbValue) {
+      document.getElementById(`eqVal${bandIdx}`).textContent = `${dbValue > 0 ? '+' : ''}${dbValue}dB`;
+      if (eqFilters[bandIdx] && audioCtx) {
+        eqFilters[bandIdx].gain.setValueAtTime(Number(dbValue), audioCtx.currentTime);
+      }
+    }
+
+    function applyEqPreset(values) {
+      values.forEach((v, i) => {
+        const slider = document.getElementById(`eqBand${i}`);
+        if (slider) {
+          slider.value = v;
+          updateEqBand(i, v);
+        }
+      });
+      showToast("Equalizer Preset Applied");
+    }
+
+    function setVolume(val) {
+      masterVolume = Number(val);
+      isMuted = masterVolume === 0;
+      if (masterGain && audioCtx) {
+        masterGain.gain.setValueAtTime(masterVolume, audioCtx.currentTime);
+      }
+      updateVolumeIcon();
+    }
+
+    function toggleMute() {
+      isMuted = !isMuted;
+      if (masterGain && audioCtx) {
+        masterGain.gain.setValueAtTime(isMuted ? 0 : masterVolume, audioCtx.currentTime);
+      }
+      document.getElementById('volumeSlider').value = isMuted ? 0 : masterVolume;
+      updateVolumeIcon();
+    }
+
+    function updateVolumeIcon() {
+      const icon = document.getElementById('volumeIcon');
+      if (isMuted || masterVolume === 0) {
+        icon.className = 'fa-solid fa-volume-xmark text-rose-400';
+      } else if (masterVolume < 0.5) {
+        icon.className = 'fa-solid fa-volume-low';
+      } else {
+        icon.className = 'fa-solid fa-volume-high';
+      }
+    }
+
+    function handleLocalUpload(event) {
+      const files = Array.from(event.target.files || []);
+      if (!files.length) return;
+
+      files.forEach((file, idx) => {
+        const url = URL.createObjectURL(file);
+        const cleanName = file.name.replace(/\.[^/.]+$/, "");
+        const newTrack = {
+          id: Date.now() + idx,
+          title: cleanName,
+          artist: "Local Audio Upload",
+          playlist: "Your Library",
+          vibe: "Local MP3 File",
+          duration: 180,
+          liked: true,
+          isLocal: true,
+          audioUrl: url,
+          gradient: "from-emerald-500 via-green-800 to-black",
+          icon: "fa-file-audio",
+          lyrics: [
+            { time: 0, text: `♪ Playing local file: ${cleanName}` },
+            { time: 10, text: "Routed live through the 5-Band Web Audio Equalizer" },
+            { time: 25, text: "Adjust Bass, Mid, and Treble sliders in real time" },
+            { time: 45, text: "Enjoy your personal music in Spotify Premium Web ♪" }
+          ]
+        };
+        tracks.unshift(newTrack);
+      });
+
+      updateLikedCounter();
+      switchView('all');
+      playTrackById(tracks[0].id);
+      showToast(`Uploaded ${files.length} audio file(s)`);
+    }
+
+    /********************************************************************
+     * 6. UI RENDERING, SEARCH, PLAYLISTS & LYRICS SYNC
+     ********************************************************************/
+    function formatTime(sec) {
+      const s = Math.max(0, Math.floor(sec));
+      const m = Math.floor(s / 60);
+      const rem = s % 60;
+      return `${m}:${rem < 10 ? '0' : ''}${rem}`;
+    }
+
+    function getFilteredTracks() {
+      return tracks.filter(t => {
+        const matchesSearch = !searchQuery ||
+          t.title.toLowerCase().includes(searchQuery) ||
+          t.artist.toLowerCase().includes(searchQuery) ||
+          t.vibe.toLowerCase().includes(searchQuery) ||
+          t.playlist.toLowerCase().includes(searchQuery);
+
+        if (!matchesSearch) return false;
+        if (currentView === 'liked') return t.liked;
+        if (currentView === 'Late Night Indie & R&B' || currentView === 'Lo-Fi Study Beats' || currentView === 'Desi Indie Vibes') {
+          return t.playlist === currentView;
+        }
+        return true;
+      });
+    }
+
+    function renderTracklist() {
+      const container = document.getElementById('tracklistContainer');
+      const filtered = getFilteredTracks();
+      const activeTrack = getCurrentTrack();
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="py-12 text-center text-spotify-subdued">
+            <i class="fa-solid fa-compact-disc text-3xl mb-2 opacity-50"></i>
+            <p class="text-sm font-medium">No matching tracks found.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map((track, idx) => {
+        const isCurrent = track.id === activeTrack.id;
+        return `
+          <div
+            onclick="playTrackById(${track.id})"
+            class="grid grid-cols-[36px_1fr_auto] md:grid-cols-[40px_1.6fr_1fr_90px_70px] gap-3 items-center px-3 py-2.5 rounded-lg hover:bg-white/10 transition cursor-pointer group ${isCurrent ? 'bg-white/[0.08]' : ''}"
+          >
+            <!-- Index or Animated Equalizer Bars -->
+            <div class="flex items-center justify-center text-xs text-spotify-subdued">
+              ${isCurrent && isPlaying ? `
+                <div class="flex items-end gap-[2px] h-3.5">
+                  <span class="w-[3px] bg-spotify-green playing-bar-1 rounded-full"></span>
+                  <span class="w-[3px] bg-spotify-green playing-bar-2 rounded-full"></span>
+                  <span class="w-[3px] bg-spotify-green playing-bar-3 rounded-full"></span>
+                </div>
+              ` : `
+                <span class="group-hover:hidden ${isCurrent ? 'text-spotify-green font-bold' : ''}">${idx + 1}</span>
+                <i class="fa-solid fa-play hidden group-hover:inline text-white text-xs"></i>
+              `}
+            </div>
+
+            <!-- Track Cover & Title -->
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-10 h-10 rounded-md bg-gradient-to-br ${track.gradient} flex items-center justify-center flex-shrink-0 shadow">
+                <i class="fa-solid ${track.icon} text-white text-xs"></i>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-semibold truncate ${isCurrent ? 'text-spotify-green' : 'text-white'}">${track.title}</p>
+                <p class="text-xs text-spotify-subdued truncate">${track.artist}</p>
+              </div>
+            </div>
+
+            <!-- Playlist / Vibe Badge -->
+            <div class="hidden md:flex items-center gap-2 min-w-0">
+              <span class="text-xs text-spotify-subdued truncate">${track.playlist}</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-spotify-subdued border border-white/5">${track.vibe}</span>
+            </div>
+
+            <!-- Like Heart Button -->
+            <div class="hidden md:flex justify-center">
+              <button
+                onclick="event.stopPropagation(); toggleLikeTrack(${track.id})"
+                class="text-sm transition transform active:scale-125 ${track.liked ? 'text-spotify-green' : 'text-spotify-subdued opacity-0 group-hover:opacity-100 hover:text-white'}"
+                title="Like Song"
+              >
+                <i class="${track.liked ? 'fa-solid' : 'fa-regular'} fa-heart"></i>
+              </button>
+            </div>
+
+            <!-- Duration -->
+            <div class="text-xs text-spotify-subdued font-mono text-right pr-2">
+              ${formatTime(track.duration)}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updatePlayerUI() {
+      const track = getCurrentTrack();
+      document.getElementById('playerTitle').textContent = track.title;
+      document.getElementById('playerArtist').textContent = `${track.artist} • ${track.vibe}`;
+      document.getElementById('playerCover').className = `w-14 h-14 rounded-lg bg-gradient-to-br ${track.gradient} flex items-center justify-center flex-shrink-0 shadow-lg cursor-pointer group relative overflow-hidden`;
+      document.getElementById('playerCoverIcon').className = `fa-solid ${track.icon} text-white text-xl`;
+
+      const likeBtn = document.getElementById('playerLikeBtn');
+      likeBtn.innerHTML = `<i class="${track.liked ? 'fa-solid text-spotify-green' : 'fa-regular'} fa-heart text-base"></i>`;
+
+      const playIcon = isPlaying ? 'fa-solid fa-pause text-sm' : 'fa-solid fa-play text-sm ml-0.5';
+      document.getElementById('playPauseIcon').className = playIcon;
+      document.getElementById('mainActionPlayIcon').className = isPlaying ? 'fa-solid fa-pause text-lg' : 'fa-solid fa-play text-lg ml-0.5';
+
+      document.getElementById('totalTimeEl').textContent = formatTime(track.duration);
+      updateSeekUI();
+    }
+
+    function updateSeekUI() {
+      const track = getCurrentTrack();
+      document.getElementById('currentTimeEl').textContent = formatTime(currentTime);
+      const slider = document.getElementById('seekSlider');
+      const progress = track.duration > 0 ? Math.min(1000, Math.floor((currentTime / track.duration) * 1000)) : 0;
+      slider.value = progress;
+    }
+
+    function toggleLikeTrack(id) {
+      const track = tracks.find(t => t.id === id);
+      if (!track) return;
+      track.liked = !track.liked;
+      updateLikedCounter();
+      updatePlayerUI();
+      renderTracklist();
+      showToast(track.liked ? `Added "${track.title}" to Liked Songs` : `Removed from Liked Songs`);
+    }
+
+    function toggleLikeCurrent() {
+      toggleLikeTrack(getCurrentTrack().id);
+    }
+
+    function updateLikedCounter() {
+      const count = tracks.filter(t => t.liked).length;
+      document.getElementById('likedCountSidebar').textContent = `${count} songs`;
+    }
+
+    function switchView(view) {
+      currentView = view === 'home' || view === 'library' ? 'all' : view;
+      const bannerTitle = document.getElementById('bannerTitle');
+      const bannerDesc = document.getElementById('bannerDesc');
+      const bannerType = document.getElementById('bannerType');
+
+      if (currentView === 'liked') {
+        bannerType.textContent = 'Personal Collection';
+        bannerTitle.textContent = 'Liked Songs';
+        bannerDesc.textContent = 'Your favorite late-night indie, R&B, and lo-fi tracks saved in one place.';
+      } else {
+        bannerType.textContent = 'Curated Playlist';
+        bannerTitle.textContent = 'All Curated Indie & R&B';
+        bannerDesc.textContent = 'Dreamy guitar plucks, warm Rhodes chords, deep sub-bass, and late-night desi indie vibes inspired by Hasan Raheem, Abdul Hannan, Talwiinder, Taimour Baig, Ali Sethi & Umair.';
+      }
+      renderTracklist();
+    }
+
+    function selectPlaylist(name) {
+      currentView = name;
+      document.getElementById('bannerType').textContent = 'Curated Playlist';
+      document.getElementById('bannerTitle').textContent = name;
+      if (name === 'Late Night Indie & R&B') {
+        document.getElementById('bannerDesc').textContent = 'Smooth R&B chords, midnight calls, and lush synth textures inspired by Hasan Raheem & Abdul Hannan.';
+      } else if (name === 'Lo-Fi Study Beats') {
+        document.getElementById('bannerDesc').textContent = 'Warm tape saturation, mellow Rhodes keys, and dusty vinyl grooves for deep focus.';
+      } else {
+        document.getElementById('bannerDesc').textContent = 'Acoustic sessions, modern folk fusion, and alt-indie hits from Talwiinder, Ali Sethi & Taimour Baig.';
+      }
+      renderTracklist();
+    }
+
+    function handleSearch(val) {
+      searchQuery = val.trim().toLowerCase();
+      document.getElementById('clearSearchBtn').classList.toggle('hidden', !searchQuery);
+      renderTracklist();
+    }
+
+    function clearSearch() {
+      const input = document.getElementById('searchInput');
+      input.value = '';
+      handleSearch('');
+    }
+
+    function focusSearch() {
+      document.getElementById('searchInput').focus();
+    }
+
+    function toggleShuffle() {
+      isShuffle = !isShuffle;
+      document.getElementById('shuffleBtn').className = `text-sm transition relative ${isShuffle ? 'text-spotify-green' : 'text-spotify-subdued hover:text-white'}`;
+      document.getElementById('mainShuffleBtn').className = `transition text-lg ${isShuffle ? 'text-spotify-green' : 'text-spotify-subdued hover:text-white'}`;
+      showToast(isShuffle ? 'Shuffle On' : 'Shuffle Off');
+    }
+
+    function toggleRepeat() {
+      repeatMode = (repeatMode + 1) % 3;
+      const btn = document.getElementById('repeatBtn');
+      if (repeatMode === 0) {
+        btn.className = 'text-spotify-subdued hover:text-white text-sm transition relative';
+        btn.innerHTML = '<i class="fa-solid fa-repeat"></i>';
+        showToast('Repeat Off');
+      } else if (repeatMode === 1) {
+        btn.className = 'text-spotify-green text-sm transition relative';
+        btn.innerHTML = '<i class="fa-solid fa-repeat"></i>';
+        showToast('Repeat All');
+      } else {
+        btn.className = 'text-spotify-green text-sm transition relative';
+        btn.innerHTML = '<i class="fa-solid fa-repeat"></i><span class="absolute -top-1.5 -right-2 text-[9px] font-bold bg-spotify-green text-black rounded-full px-1">1</span>';
+        showToast('Repeat One Track');
+      }
+    }
+
+    function toggleLyricsOverlay() {
+      const overlay = document.getElementById('lyricsOverlay');
+      overlay.classList.toggle('hidden');
+      const isOpen = !overlay.classList.contains('hidden');
+      document.getElementById('bottomLyricsBtn').className = `text-sm transition p-1 ${isOpen ? 'text-spotify-green' : 'text-spotify-subdued hover:text-white'}`;
+      renderLyrics();
+    }
+
+    function renderLyrics() {
+      const track = getCurrentTrack();
+      const container = document.getElementById('lyricsLinesContainer');
+      if (!track.lyrics) return;
+
+      container.innerHTML = track.lyrics.map((line, i) => `
+        <p
+          id="lyric-line-${i}"
+          onclick="seekToSeconds(${line.time})"
+          class="lyric-line text-lg sm:text-2xl md:text-3xl font-bold text-white/35 hover:text-white/80 cursor-pointer px-4"
+        >
+          ${line.text}
+        </p>
+      `).join('');
+      highlightActiveLyric();
+    }
+
+    function highlightActiveLyric() {
+      const track = getCurrentTrack();
+      if (!track.lyrics) return;
+      let activeIdx = 0;
+      for (let i = 0; i < track.lyrics.length; i++) {
+        if (currentTime >= track.lyrics[i].time) activeIdx = i;
+      }
+      track.lyrics.forEach((_, i) => {
+        const el = document.getElementById(`lyric-line-${i}`);
+        if (el) {
+          el.classList.toggle('lyric-active', i === activeIdx);
+        }
+      });
+    }
+
+    function toggleEqualizerModal() {
+      const modal = document.getElementById('eqModal');
+      modal.classList.toggle('hidden');
+    }
+
+    function toggleQueueDrawer() {
+      const drawer = document.getElementById('queueDrawer');
+      drawer.classList.toggle('hidden');
+      drawer.classList.toggle('flex');
+      const isOpen = !drawer.classList.contains('hidden');
+      document.getElementById('bottomQueueBtn').className = `text-sm transition p-1 ${isOpen ? 'text-spotify-green' : 'text-spotify-subdued hover:text-white'}`;
+      renderQueue();
+    }
+
+    function renderQueue() {
+      const current = getCurrentTrack();
+      document.getElementById('queueNowPlaying').innerHTML = `
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded bg-gradient-to-br ${current.gradient} flex items-center justify-center flex-shrink-0">
+            <i class="fa-solid ${current.icon} text-white text-xs"></i>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-xs font-bold text-spotify-green truncate">${current.title}</p>
+            <p class="text-[11px] text-spotify-subdued truncate">${current.artist}</p>
+          </div>
+        </div>
+      `;
+
+      const upcoming = tracks.filter(t => t.id !== current.id);
+      document.getElementById('queueNextList').innerHTML = upcoming.map(t => `
+        <div onclick="playTrackById(${t.id})" class="flex items-center gap-3 p-1.5 rounded-lg hover:bg-white/10 cursor-pointer transition">
+          <div class="w-9 h-9 rounded bg-gradient-to-br ${t.gradient} flex items-center justify-center flex-shrink-0">
+            <i class="fa-solid ${t.icon} text-white text-[11px]"></i>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-xs font-semibold text-white truncate">${t.title}</p>
+            <p class="text-[11px] text-spotify-subdued truncate">${t.artist}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    let toastTimeout = null;
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.style.opacity = '1';
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.style.opacity = '0';
+      }, 2200);
+    }
+
+    /********************************************************************
+     * 7. REAL-TIME AUDIO VISUALIZER (Mini Bar + Full Overlay Canvas)
+     ********************************************************************/
+    const miniCanvas = document.getElementById('miniVisualizer');
+    const miniCtx = miniCanvas.getContext('2d');
+    const largeCanvas = document.getElementById('largeVisualizer');
+    const largeCtx = largeCanvas.getContext('2d');
+
+    function drawVisualizers() {
+      requestAnimationFrame(drawVisualizers);
+
+      const miniW = miniCanvas.width;
+      const miniH = miniCanvas.height;
+      miniCtx.clearRect(0, 0, miniW, miniH);
+
+      const largeW = largeCanvas.width;
+      const largeH = largeCanvas.height;
+      largeCtx.clearRect(0, 0, largeW, largeH);
+
+      const bars = 28;
+      let freqData = new Uint8Array(bars);
+
+      if (analyser && isPlaying) {
+        analyser.getByteFrequencyData(freqData);
+      }
+
+      // Draw Mini Visualizer
+      const barWidth = miniW / bars;
+      for (let i = 0; i < bars; i++) {
+        const val = isPlaying ? freqData[i] : 18;
+        const h = Math.max(3, (val / 255) * (miniH - 4));
+        miniCtx.fillStyle = '#1DB954';
+        miniCtx.fillRect(i * barWidth + 1, miniH - h, barWidth - 2, h);
+      }
+
+      // Draw Large Overlay Visualizer
+      const lgBarWidth = largeW / bars;
+      for (let i = 0; i < bars; i++) {
+        const val = isPlaying ? freqData[i] : 15;
+        const h = Math.max(4, (val / 255) * (largeH - 10));
+        const grad = largeCtx.createLinearGradient(0, largeH, 0, 0);
+        grad.addColorStop(0, '#1DB954');
+        grad.addColorStop(1, '#6ee7b7');
+        largeCtx.fillStyle = grad;
+        largeCtx.fillRect(i * lgBarWidth + 2, largeH - h, lgBarWidth - 4, h);
+      }
+    }
+
+    // Set greeting based on time of day
+    function initGreeting() {
+      const hr = new Date().getHours();
+      const greet = hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening';
+      document.getElementById('greetingTitle').textContent = greet;
+    }
+
+    // Initialize App on Load
+    window.onload = function () {
+      initGreeting();
+      updateLikedCounter();
+      renderTracklist();
+      updatePlayerUI();
+      renderQueue();
+      renderLyrics();
+      drawVisualizers();
+    };
+  </script>
 </body>
 </html>
+```

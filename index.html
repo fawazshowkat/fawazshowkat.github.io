@@ -1,753 +1,701 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AURA Music — YouTube Powered</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    :root {
-      --bg-main: #030303;
-      --bg-sidebar: #0f0f0f;
-      --bg-card: rgba(255, 255, 255, 0.05);
-      --bg-card-hover: rgba(255, 255, 255, 0.1);
-      --accent: #ff0000;
-      --accent-glow: rgba(255, 0, 0, 0.4);
-      --text-main: #ffffff;
-      --text-muted: #aaa;
-      --glass-border: rgba(255, 255, 255, 0.1);
-      --sidebar-width: 240px;
-      --player-height: 90px;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    body {
-      background: var(--bg-main);
-      color: var(--text-main);
-      display: flex;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    /* Sidebar Navigation */
-    .sidebar {
-      width: var(--sidebar-width);
-      background: var(--bg-sidebar);
-      border-right: 1px solid var(--glass-border);
-      display: flex;
-      flex-direction: column;
-      padding: 20px 16px;
-      gap: 24px;
-      z-index: 10;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      color: #fff;
-    }
-
-    .brand i {
-      color: var(--accent);
-      font-size: 24px;
-    }
-
-    .nav-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 12px 16px;
-      border-radius: 10px;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-size: 14px;
-      font-weight: 500;
-    }
-
-    .nav-item:hover, .nav-item.active {
-      color: var(--text-main);
-      background: var(--bg-card-hover);
-    }
-
-    .nav-item.active i {
-      color: var(--accent);
-    }
-
-    /* Main Area */
-    .main-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      height: calc(100vh - var(--player-height));
-      overflow-y: auto;
-      padding: 24px 32px;
-    }
-
-    /* Header & Search */
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 28px;
-      gap: 20px;
-    }
-
-    .search-box {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: rgba(255, 255, 255, 0.07);
-      border: 1px solid var(--glass-border);
-      padding: 10px 20px;
-      border-radius: 24px;
-      flex: 1;
-      max-width: 500px;
-      transition: all 0.3s ease;
-    }
-
-    .search-box:focus-within {
-      border-color: var(--accent);
-      background: rgba(255, 255, 255, 0.12);
-    }
-
-    .search-box input {
-      background: none;
-      border: none;
-      outline: none;
-      color: #fff;
-      width: 100%;
-      font-size: 14px;
-    }
-
-    .yt-input-group {
-      display: flex;
-      gap: 10px;
-    }
-
-    .yt-input-group input {
-      background: rgba(255, 255, 255, 0.07);
-      border: 1px solid var(--glass-border);
-      color: #fff;
-      padding: 10px 14px;
-      border-radius: 20px;
-      font-size: 13px;
-      outline: none;
-      width: 220px;
-    }
-
-    .yt-input-group button {
-      background: var(--accent);
-      border: none;
-      color: white;
-      padding: 10px 18px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 13px;
-      transition: opacity 0.2s;
-    }
-
-    .yt-input-group button:hover {
-      opacity: 0.9;
-    }
-
-    /* Video Player Screen Banner */
-    .player-screen-wrap {
-      display: flex;
-      gap: 24px;
-      background: linear-gradient(135deg, rgba(255, 0, 0, 0.15) 0%, rgba(20, 20, 20, 0.8) 100%);
-      border: 1px solid var(--glass-border);
-      border-radius: 20px;
-      padding: 20px;
-      margin-bottom: 28px;
-      align-items: center;
-    }
-
-    .yt-frame-container {
-      width: 320px;
-      height: 180px;
-      border-radius: 14px;
-      overflow: hidden;
-      background: #000;
-      flex-shrink: 0;
-      position: relative;
-    }
-
-    #yt-player {
-      width: 100%;
-      height: 100%;
-    }
-
-    .screen-details h2 {
-      font-size: 26px;
-      margin-bottom: 8px;
-    }
-
-    .screen-details p {
-      color: var(--text-muted);
-      font-size: 14px;
-      margin-bottom: 14px;
-    }
-
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(255, 0, 0, 0.2);
-      color: var(--accent);
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    /* Music Grid */
-    .section-title {
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 16px;
-    }
-
-    .music-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 20px;
-    }
-
-    .music-card {
-      background: var(--bg-card);
-      border: 1px solid var(--glass-border);
-      padding: 14px;
-      border-radius: 14px;
-      cursor: pointer;
-      transition: all 0.25s ease;
-    }
-
-    .music-card:hover {
-      background: var(--bg-card-hover);
-      transform: translateY(-4px);
-    }
-
-    .card-img-wrap {
-      position: relative;
-      width: 100%;
-      padding-top: 100%;
-      border-radius: 10px;
-      overflow: hidden;
-      margin-bottom: 12px;
-      background: #151515;
-    }
-
-    .card-img-wrap img {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      object-fit: cover;
-    }
-
-    .play-overlay {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transition: opacity 0.2s ease;
-    }
-
-    .music-card:hover .play-overlay {
-      opacity: 1;
-    }
-
-    .play-btn-icon {
-      width: 44px;
-      height: 44px;
-      background: var(--accent);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-size: 16px;
-    }
-
-    .card-title {
-      font-size: 14px;
-      font-weight: 700;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .card-artist {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-
-    /* Fixed Bottom Player Controls */
-    .player-bar {
-      position: fixed;
-      bottom: 0; left: 0;
-      width: 100%;
-      height: var(--player-height);
-      background: #0f0f12;
-      border-top: 1px solid var(--glass-border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 28px;
-      z-index: 100;
-    }
-
-    .track-info {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      width: 25%;
-    }
-
-    .track-thumb {
-      width: 52px;
-      height: 52px;
-      border-radius: 8px;
-      object-fit: cover;
-      background: #222;
-    }
-
-    .track-details .name {
-      font-size: 14px;
-      font-weight: 700;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 180px;
-    }
-
-    .track-details .artist {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    .controls-center {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      width: 45%;
-    }
-
-    .control-buttons {
-      display: flex;
-      align-items: center;
-      gap: 18px;
-    }
-
-    .btn-action {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      font-size: 16px;
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-
-    .btn-action:hover, .btn-action.active {
-      color: var(--text-main);
-    }
-
-    .btn-play-pause {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: #fff;
-      color: #000;
-      border: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    .progress-container {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .progress-bar {
-      flex: 1;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 2px;
-      position: relative;
-      cursor: pointer;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: var(--accent);
-      border-radius: 2px;
-      width: 0%;
-    }
-
-    .extra-controls {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 10px;
-      width: 25%;
-    }
-
-    .volume-slider {
-      width: 90px;
-      accent-color: var(--accent);
-      cursor: pointer;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kinetic Strings & Percussion</title>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body, html {
+    width: 100%;
+    height: 100%;
+    background-color: #0d0f12;
+    color: #e2e8f0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow: hidden;
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+  }
+  #ui {
+    position: absolute;
+    top: 20px;
+    left: 24px;
+    right: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    pointer-events: none;
+    z-index: 10;
+  }
+  .hint {
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+  }
+  .controls {
+    display: flex;
+    gap: 10px;
+    pointer-events: auto;
+  }
+  button {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.75);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(8px);
+  }
+  button:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+  }
+  button.active {
+    background: rgba(56, 189, 248, 0.18);
+    border-color: rgba(56, 189, 248, 0.5);
+    color: #38bdf8;
+  }
+</style>
 </head>
 <body>
 
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="brand">
-      <i class="fa-brands fa-youtube"></i>
-      <span>AURA Music</span>
-    </div>
-    <ul class="nav-list">
-      <li class="nav-item active"><i class="fa-solid fa-house"></i> Home</li>
-      <li class="nav-item" id="nav-trending"><i class="fa-solid fa-fire"></i> Trending</li>
-      <li class="nav-item" id="nav-lofi"><i class="fa-solid fa-mug-hot"></i> Lofi & Chill</li>
-      <li class="nav-item" id="nav-synth"><i class="fa-solid fa-bolt"></i> Synthwave</li>
-    </ul>
-  </aside>
-
-  <!-- Main Content -->
-  <main class="main-content">
-    <header>
-      <div class="search-box">
-        <i class="fa-solid fa-magnifying-glass" style="color: var(--text-muted);"></i>
-        <input type="text" id="search-input" placeholder="Search song name, artist, or album...">
-      </div>
-
-      <div class="yt-input-group">
-        <input type="text" id="yt-url-input" placeholder="Paste YouTube URL or Video ID">
-        <button id="yt-play-btn"><i class="fa-solid fa-play"></i> Play Link</button>
-      </div>
-    </header>
-
-    <!-- YouTube Screen & Current Playing Card -->
-    <div class="player-screen-wrap">
-      <div class="yt-frame-container">
-        <div id="yt-player"></div>
-      </div>
-      <div class="screen-details">
-        <span class="status-badge"><i class="fa-solid fa-signal"></i> LIVE YOUTUBE STREAM</span>
-        <h2 id="display-title">Select a track to start</h2>
-        <p id="display-artist">Search any music track or choose from curated collections below</p>
-      </div>
-    </div>
-
-    <h2 class="section-title" id="grid-title">Featured Songs</h2>
-    <div class="music-grid" id="music-grid">
-      <!-- Tracks populated dynamically -->
-    </div>
-  </main>
-
-  <!-- Player Bar -->
-  <div class="player-bar">
-    <div class="track-info">
-      <img src="https://picsum.photos/200/200?random=1" id="player-thumb" class="track-thumb" alt="Cover">
-      <div class="track-details">
-        <div class="name" id="player-title">Ready to Stream</div>
-        <div class="artist" id="player-artist">YouTube Engine</div>
-      </div>
-    </div>
-
-    <div class="controls-center">
-      <div class="control-buttons">
-        <button class="btn-action" id="btn-shuffle"><i class="fa-solid fa-shuffle"></i></button>
-        <button class="btn-action" id="btn-prev"><i class="fa-solid fa-backward-step"></i></button>
-        <button class="btn-play-pause" id="btn-play"><i class="fa-solid fa-play"></i></button>
-        <button class="btn-action" id="btn-next"><i class="fa-solid fa-forward-step"></i></button>
-        <button class="btn-action" id="btn-repeat"><i class="fa-solid fa-repeat"></i></button>
-      </div>
-      <div class="progress-container">
-        <span id="current-time">0:00</span>
-        <div class="progress-bar" id="progress-bar">
-          <div class="progress-fill" id="progress-fill"></div>
-        </div>
-        <span id="total-duration">0:00</span>
-      </div>
-    </div>
-
-    <div class="extra-controls">
-      <i class="fa-solid fa-volume-high" style="color: var(--text-muted);"></i>
-      <input type="range" class="volume-slider" id="volume-slider" min="0" max="100" value="80">
-    </div>
+<div id="ui">
+  <div class="hint">Strum strings • Tap shapes • Click space to launch orbs</div>
+  <div class="controls">
+    <button id="emitterBtn" class="active">Auto-Orbs: ON</button>
+    <button id="addOrbBtn">+ Launch Orb</button>
+    <button id="clearBtn">Clear Orbs & Staff</button>
   </div>
+</div>
 
-  <!-- Load YouTube IFrame API -->
-  <script src="https://www.youtube.com/iframe_api"></script>
-  <script>
-    // Curated default tracks with verified YouTube Video IDs
-    let defaultTracks = [
-      { title: "Lofi Hip Hop Radio - Beats to Relax/Study", artist: "Lofi Girl", ytId: "jfKfPfyJRdk", cover: "https://i.ytimg.com/vi/jfKfPfyJRdk/hqdefault.jpg" },
-      { title: "Synthwave Radio - Chill Retro Beats", artist: "Lofi Girl", ytId: "4xDzrJKXOOY", cover: "https://i.ytimg.com/vi/4xDzrJKXOOY/hqdefault.jpg" },
-      { title: "Starboy", artist: "The Weeknd", ytId: "34Na4j8AVgA", cover: "https://i.ytimg.com/vi/34Na4j8AVgA/hqdefault.jpg" },
-      { title: "Blinding Lights", artist: "The Weeknd", ytId: "4NRXx6U8ABQ", cover: "https://i.ytimg.com/vi/4NRXx6U8ABQ/hqdefault.jpg" },
-      { title: "Shape of You", artist: "Ed Sheeran", ytId: "JGwWNGJdvx8", cover: "https://i.ytimg.com/vi/JGwWNGJdvx8/hqdefault.jpg" },
-      { title: "Night Changes", artist: "One Direction", ytId: "syFZWG80VDg", cover: "https://i.ytimg.com/vi/syFZWG80VDg/hqdefault.jpg" }
-    ];
+<canvas id="canvas"></canvas>
 
-    let currentPlaylist = [...defaultTracks];
-    let currentIndex = 0;
-    let ytPlayer = null;
-    let isPlaying = false;
-    let updateTimer = null;
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
 
-    // Initialize YouTube IFrame Player
-    function onYouTubeIframeAPIReady() {
-      ytPlayer = new YT.Player('yt-player', {
-        height: '100%',
-        width: '100%',
-        videoId: defaultTracks[0].ytId,
-        playerVars: {
-          'autoplay': 0,
-          'controls': 1,
-          'modestbranding': 1,
-          'rel': 0
-        },
-        events: {
-          'onReady': onPlayerReady,
-          'onStateChange': onPlayerStateChange
+let width, height, staffTop, playAreaHeight;
+
+// --- Web Audio API Synthesizer ---
+let audioCtx = null;
+
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}
+
+function playGuitarNote(freq) {
+  initAudio();
+  const now = audioCtx.currentTime;
+
+  const osc1 = audioCtx.createOscillator();
+  const osc2 = audioCtx.createOscillator();
+  const filter = audioCtx.createBiquadFilter();
+  const gain = audioCtx.createGain();
+
+  // Warm plucked string timbre
+  osc1.type = 'triangle';
+  osc2.type = 'sawtooth';
+  osc1.frequency.setValueAtTime(freq, now);
+  osc2.frequency.setValueAtTime(freq * 1.002, now); // Slight detune for chorus warmth
+
+  filter.type = 'lowpass';
+  filter.frequency.setValueAtTime(freq * 5, now);
+  filter.frequency.exponentialRampToValueAtTime(freq * 1.2, now + 1.2);
+
+  gain.gain.setValueAtTime(0.001, now);
+  gain.gain.linearRampToValueAtTime(0.28, now + 0.012);
+  gain.gain.exponentialRampToValueAtTime(0.0008, now + 1.8);
+
+  osc1.connect(filter);
+  osc2.connect(filter);
+  filter.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc1.start(now);
+  osc2.start(now);
+  osc1.stop(now + 1.85);
+  osc2.stop(now + 1.85);
+}
+
+function playDrum(type) {
+  initAudio();
+  const now = audioCtx.currentTime;
+
+  if (type === 'kick') {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.frequency.setValueAtTime(140, now);
+    osc.frequency.exponentialRampToValueAtTime(32, now + 0.35);
+    gain.gain.setValueAtTime(0.7, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.4);
+  } else if (type === 'snare') {
+    // Noise burst
+    const bufferSize = audioCtx.sampleRate * 0.2;
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.setValueAtTime(600, now);
+
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0.35, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioCtx.destination);
+    noise.start(now);
+
+    // Body tone
+    const osc = audioCtx.createOscillator();
+    const oscGain = audioCtx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(180, now);
+    oscGain.gain.setValueAtTime(0.3, now);
+    oscGain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+    osc.connect(oscGain);
+    oscGain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.1);
+  } else if (type === 'hat') {
+    const bufferSize = audioCtx.sampleRate * 0.08;
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.setValueAtTime(6500, now);
+
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0.22, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioCtx.destination);
+    noise.start(now);
+  }
+}
+
+// --- Musical Elements ---
+// E4, D4, B3, G3, E3, C3 (Harmonious minor/pentatonic voicing)
+// staffStep: 0 = bottom line (E4), positive = steps upward on the 5-line staff
+const stringDefs = [
+  { name: 'E5', freq: 659.25, step: 7, color: '#38bdf8' },
+  { name: 'B4', freq: 493.88, step: 4, color: '#818cf8' },
+  { name: 'G4', freq: 392.00, step: 2, color: '#c084fc' },
+  { name: 'E4', freq: 329.63, step: 0, color: '#f472b6' },
+  { name: 'D4', freq: 293.66, step: -1, color: '#fb7185' },
+  { name: 'A3', freq: 220.00, step: -3, color: '#fbbf24' }
+];
+
+let strings = [];
+let drums = [];
+let orbs = [];
+let sheetNotes = [];
+let ripples = [];
+
+let autoEmit = true;
+let lastEmitTime = 0;
+
+function resize() {
+  width = canvas.width = window.innerWidth;
+  height = canvas.height = window.innerHeight;
+  staffTop = height * 0.74;
+  playAreaHeight = staffTop - 40;
+
+  // Position 6 horizontal guitar strings on the left/center
+  const stringStartX = width * 0.08;
+  const stringEndX = width * 0.58;
+  const topY = playAreaHeight * 0.22;
+  const spacing = (playAreaHeight * 0.65) / (stringDefs.length - 1);
+
+  strings = stringDefs.map((def, i) => ({
+    ...def,
+    x1: stringStartX,
+    x2: stringEndX,
+    y: topY + i * spacing,
+    amp: 0,
+    vel: 0,
+    nodeX: (stringStartX + stringEndX) / 2,
+    nodeRadius: 16
+  }));
+
+  // Position 3 geometric drum shapes on the right
+  const drumX = width * 0.78;
+  drums = [
+    {
+      name: 'Hi-Hat',
+      drumType: 'hat',
+      shape: 'triangle',
+      x: drumX,
+      y: playAreaHeight * 0.26,
+      radius: 38,
+      color: '#fde047',
+      step: 8,
+      pulse: 0
+    },
+    {
+      name: 'Snare',
+      drumType: 'snare',
+      shape: 'diamond',
+      x: drumX + 45,
+      y: playAreaHeight * 0.53,
+      radius: 42,
+      color: '#fb923c',
+      step: 4,
+      pulse: 0
+    },
+    {
+      name: 'Kick',
+      drumType: 'kick',
+      shape: 'hexagon',
+      x: drumX - 15,
+      y: playAreaHeight * 0.80,
+      radius: 48,
+      color: '#f87171',
+      step: 0,
+      pulse: 0
+    }
+  ];
+}
+
+window.addEventListener('resize', resize);
+resize();
+
+// --- Note & Ripple Triggers ---
+function triggerString(s, hitX) {
+  playGuitarNote(s.freq);
+  s.amp = 24;
+  const rippleX = hitX || s.nodeX;
+  ripples.push({ x: rippleX, y: s.y, r: 6, maxR: 45, color: s.color, alpha: 1 });
+  addSheetNote(s.step, s.color, 'note', s.name);
+}
+
+function triggerDrum(d) {
+  playDrum(d.drumType);
+  d.pulse = 14;
+  ripples.push({ x: d.x, y: d.y, r: d.radius * 0.8, maxR: d.radius * 1.9, color: d.color, alpha: 1 });
+  addSheetNote(d.step, d.color, 'drum', d.name);
+}
+
+function addSheetNote(step, color, kind, label) {
+  sheetNotes.push({
+    x: width * 0.88,
+    step,
+    color,
+    kind,
+    label,
+    alpha: 1,
+    born: performance.now()
+  });
+}
+
+// --- Orb Spawning ---
+function spawnOrb(x, y, vx, vy) {
+  const angle = Math.random() * Math.PI * 2;
+  const speed = 2.6 + Math.random() * 1.8;
+  orbs.push({
+    x: x !== undefined ? x : width * 0.08 + Math.random() * (width * 0.8),
+    y: y !== undefined ? y : 70,
+    vx: vx !== undefined ? vx : Math.cos(angle) * speed,
+    vy: vy !== undefined ? vy : Math.abs(Math.sin(angle)) * speed + 1.2,
+    r: 7,
+    cooldowns: new Map()
+  });
+  if (orbs.length > 10) orbs.shift();
+}
+
+// Spawn initial orb
+spawnOrb(width * 0.35, 90, 3.2, 2.4);
+
+// --- Pointer Interaction ---
+let pointer = { x: 0, y: 0, prevX: 0, prevY: 0, down: false };
+
+function segmentsIntersect(x1, y1, x2, y2, x3, y3, x4, y4) {
+  const denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
+  if (denom === 0) return false;
+  const ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denom;
+  const ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denom;
+  return ua >= 0 && ua <= 1 && ub >= 0 && ub <= 1;
+}
+
+canvas.addEventListener('pointerdown', (e) => {
+  initAudio();
+  pointer.down = true;
+  pointer.x = pointer.prevX = e.clientX;
+  pointer.y = pointer.prevY = e.clientY;
+
+  // Check if clicked on a drum shape
+  let hitSomething = false;
+  for (const d of drums) {
+    const dist = Math.hypot(pointer.x - d.x, pointer.y - d.y);
+    if (dist <= d.radius + 8) {
+      triggerDrum(d);
+      hitSomething = true;
+    }
+  }
+
+  // Check if clicked near a string resonating node
+  for (const s of strings) {
+    const dist = Math.hypot(pointer.x - s.nodeX, pointer.y - s.y);
+    if (dist <= s.nodeRadius + 8) {
+      triggerString(s, s.nodeX);
+      hitSomething = true;
+    }
+  }
+
+  // Otherwise spawn a moving orb where clicked (if in upper play area)
+  if (!hitSomething && pointer.y < staffTop - 20 && pointer.y > 60) {
+    const angle = (Math.random() - 0.5) * Math.PI * 1.4;
+    spawnOrb(pointer.x, pointer.y, Math.sin(angle) * 3.5, Math.cos(angle) * 3.2);
+  }
+});
+
+canvas.addEventListener('pointermove', (e) => {
+  pointer.prevX = pointer.x;
+  pointer.prevY = pointer.y;
+  pointer.x = e.clientX;
+  pointer.y = e.clientY;
+
+  // Strum strings by moving across them
+  for (const s of strings) {
+    if (segmentsIntersect(pointer.prevX, pointer.prevY, pointer.x, pointer.y, s.x1, s.y, s.x2, s.y)) {
+      triggerString(s, pointer.x);
+    }
+  }
+
+  // Pass over drum shapes with mouse while dragging
+  if (pointer.down) {
+    for (const d of drums) {
+      const prevDist = Math.hypot(pointer.prevX - d.x, pointer.prevY - d.y);
+      const currDist = Math.hypot(pointer.x - d.x, pointer.y - d.y);
+      if (prevDist > d.radius && currDist <= d.radius) {
+        triggerDrum(d);
+      }
+    }
+  }
+});
+
+window.addEventListener('pointerup', () => {
+  pointer.down = false;
+});
+
+// --- UI Buttons ---
+const emitterBtn = document.getElementById('emitterBtn');
+emitterBtn.addEventListener('click', () => {
+  initAudio();
+  autoEmit = !autoEmit;
+  emitterBtn.textContent = `Auto-Orbs: ${autoEmit ? 'ON' : 'OFF'}`;
+  emitterBtn.classList.toggle('active', autoEmit);
+});
+
+document.getElementById('addOrbBtn').addEventListener('click', () => {
+  initAudio();
+  spawnOrb();
+});
+
+document.getElementById('clearBtn').addEventListener('click', () => {
+  orbs = [];
+  sheetNotes = [];
+});
+
+// --- Polygon Drawing Helper ---
+function drawPolygon(x, y, radius, sides, rotation = 0) {
+  ctx.beginPath();
+  for (let i = 0; i < sides; i++) {
+    const a = rotation + (i * 2 * Math.PI) / sides;
+    const px = x + Math.cos(a) * radius;
+    const py = y + Math.sin(a) * radius;
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+}
+
+// --- Main Animation Loop ---
+function animate(now) {
+  ctx.clearRect(0, 0, width, height);
+
+  // Auto-spawn gentle orbs periodically if enabled
+  if (autoEmit && orbs.length < 4 && now - lastEmitTime > 3200) {
+    spawnOrb();
+    lastEmitTime = now;
+  }
+
+  // 1. Draw & Update Guitar Strings
+  for (const s of strings) {
+    // Spring damping for string vibration
+    s.amp *= 0.91;
+    const offset = Math.sin(now * 0.065) * s.amp;
+
+    // String line
+    ctx.beginPath();
+    ctx.moveTo(s.x1, s.y);
+    ctx.quadraticCurveTo((s.x1 + s.x2) / 2, s.y + offset, s.x2, s.y);
+    ctx.strokeStyle = s.amp > 0.8 ? s.color : 'rgba(255, 255, 255, 0.22)';
+    ctx.lineWidth = 1.5 + (s.amp / 12);
+    ctx.stroke();
+
+    // Endpoints
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+    ctx.beginPath();
+    ctx.arc(s.x1, s.y, 3, 0, Math.PI * 2);
+    ctx.arc(s.x2, s.y, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Resonator shape in the center of the string
+    ctx.save();
+    ctx.translate(s.nodeX, s.y + offset * 0.5);
+    ctx.rotate(Math.PI / 4);
+    const sz = s.nodeRadius + s.amp * 0.25;
+    ctx.strokeStyle = s.color;
+    ctx.fillStyle = 'rgba(13, 15, 18, 0.85)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.rect(-sz / 2, -sz / 2, sz, sz);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+
+    // Subtle note label
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.font = '11px sans-serif';
+    ctx.fillText(s.name, s.x1 - 28, s.y + 4);
+  }
+
+  // 2. Draw & Update Drum Shapes
+  for (const d of drums) {
+    d.pulse *= 0.88;
+    const r = d.radius + d.pulse;
+
+    ctx.save();
+    ctx.strokeStyle = d.color;
+    ctx.fillStyle = d.pulse > 1 ? `${d.color}22` : 'rgba(255, 255, 255, 0.02)';
+    ctx.lineWidth = 2 + d.pulse * 0.15;
+
+    if (d.shape === 'triangle') {
+      drawPolygon(d.x, d.y, r, 3, -Math.PI / 2);
+    } else if (d.shape === 'diamond') {
+      drawPolygon(d.x, d.y, r, 4, 0);
+    } else {
+      drawPolygon(d.x, d.y, r, 6, Math.PI / 6);
+    }
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(d.name.toUpperCase(), d.x, d.y + 4);
+    ctx.restore();
+  }
+
+  // 3. Update & Draw Moving Orbs
+  for (const orb of orbs) {
+    const prevX = orb.x;
+    const prevY = orb.y;
+
+    orb.x += orb.vx;
+    orb.y += orb.vy;
+
+    // Bounce off walls within the play area
+    if (orb.x < orb.r || orb.x > width - orb.r) orb.vx *= -1;
+    if (orb.y < 55 || orb.y > staffTop - 25) orb.vy *= -1;
+
+    // Check if orb crossed any guitar string
+    for (const s of strings) {
+      const lastHit = orb.cooldowns.get(s) || 0;
+      if (now - lastHit > 180) {
+        if (segmentsIntersect(prevX, prevY, orb.x, orb.y, s.x1, s.y, s.x2, s.y)) {
+          triggerString(s, orb.x);
+          orb.cooldowns.set(s, now);
         }
-      });
-    }
-
-    function onPlayerReady() {
-      loadTrack(0, false);
-      startProgressLoop();
-    }
-
-    function onPlayerStateChange(event) {
-      if (event.data === YT.PlayerState.PLAYING) {
-        isPlaying = true;
-        document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-pause"></i>';
-      } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
-        isPlaying = false;
-        document.getElementById('btn-play').innerHTML = '<i class="fa-solid fa-play"></i>';
-        if (event.data === YT.PlayerState.ENDED) {
-          nextTrack();
-        }
       }
     }
 
-    // Load track by index
-    function loadTrack(index, autoPlay = true) {
-      if (index < 0 || index >= currentPlaylist.length) return;
-      currentIndex = index;
-      const track = currentPlaylist[index];
-
-      document.getElementById('player-title').textContent = track.title;
-      document.getElementById('player-artist').textContent = track.artist;
-      document.getElementById('player-thumb').src = track.cover;
-      document.getElementById('display-title').textContent = track.title;
-      document.getElementById('display-artist').textContent = track.artist;
-
-      if (ytPlayer && ytPlayer.loadVideoById) {
-        if (autoPlay) {
-          ytPlayer.loadVideoById(track.ytId);
-        } else {
-          ytPlayer.cueVideoById(track.ytId);
-        }
+    // Check if orb moved past / through any drum shape
+    for (const d of drums) {
+      const lastHit = orb.cooldowns.get(d) || 0;
+      const dist = Math.hypot(orb.x - d.x, orb.y - d.y);
+      if (dist < d.radius + orb.r && now - lastHit > 320) {
+        triggerDrum(d);
+        orb.cooldowns.set(d, now);
+        // Gentle deflection
+        const angle = Math.atan2(orb.y - d.y, orb.x - d.x);
+        const speed = Math.hypot(orb.vx, orb.vy);
+        orb.vx = Math.cos(angle) * speed;
+        orb.vy = Math.sin(angle) * speed;
       }
     }
 
-    // Playback controls
-    function playTrack() {
-      if (ytPlayer && ytPlayer.playVideo) ytPlayer.playVideo();
+    // Draw orb glow
+    ctx.beginPath();
+    ctx.arc(orb.x, orb.y, orb.r, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = '#38bdf8';
+    ctx.shadowBlur = 14;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  // 4. Draw Ripples
+  for (let i = ripples.length - 1; i >= 0; i--) {
+    const rp = ripples[i];
+    rp.r += (rp.maxR - rp.r) * 0.14;
+    rp.alpha *= 0.90;
+
+    ctx.beginPath();
+    ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2);
+    ctx.strokeStyle = rp.color;
+    ctx.globalAlpha = rp.alpha;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    if (rp.alpha < 0.03) ripples.splice(i, 1);
+  }
+
+  // 5. Draw Scrolling Sheet Music Staff at the Bottom
+  const lineSpacing = 13;
+  const staffLines = 5;
+  const bottomLineY = staffTop + 45 + (staffLines - 1) * lineSpacing;
+  const staffLeft = width * 0.06;
+  const staffRight = width * 0.94;
+
+  // Draw the 5 horizontal staff lines
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < staffLines; i++) {
+    const ly = bottomLineY - i * lineSpacing;
+    ctx.beginPath();
+    ctx.moveTo(staffLeft, ly);
+    ctx.lineTo(staffRight, ly);
+    ctx.stroke();
+  }
+
+  // Minimalist Treble Clef & Playhead bar
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+  ctx.font = '46px serif';
+  ctx.fillText('𝄞', staffLeft + 10, bottomLineY - 8);
+
+  // Subtle entry line on the right where new notes appear
+  ctx.strokeStyle = 'rgba(56, 189, 248, 0.25)';
+  ctx.beginPath();
+  ctx.moveTo(width * 0.88, bottomLineY - 4 * lineSpacing - 12);
+  ctx.lineTo(width * 0.88, bottomLineY + 12);
+  ctx.stroke();
+
+  // Update & Draw Sheet Music Notes
+  for (let i = sheetNotes.length - 1; i >= 0; i--) {
+    const n = sheetNotes[i];
+    n.x -= 1.6; // Scroll left across the staff
+
+    const ny = bottomLineY - n.step * (lineSpacing / 2);
+
+    // Fade out as notes approach the clef on the left
+    if (n.x < staffLeft + 75) {
+      n.alpha -= 0.05;
     }
 
-    function pauseTrack() {
-      if (ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo();
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, n.alpha);
+    ctx.strokeStyle = n.color;
+    ctx.fillStyle = n.color;
+
+    // Draw Ledger line if below the bottom line (e.g. A3)
+    if (n.step <= -2) {
+      const ledgerY = bottomLineY + lineSpacing;
+      ctx.beginPath();
+      ctx.moveTo(n.x - 12, ledgerY);
+      ctx.lineTo(n.x + 12, ledgerY);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.stroke();
+      ctx.strokeStyle = n.color;
     }
 
-    document.getElementById('btn-play').onclick = () => {
-      if (isPlaying) pauseTrack();
-      else playTrack();
-    };
+    if (n.kind === 'note') {
+      // Filled oval notehead
+      ctx.beginPath();
+      ctx.ellipse(n.x, ny, 7, 5, -0.3, 0, Math.PI * 2);
+      ctx.fill();
 
-    function nextTrack() {
-      currentIndex = (currentIndex + 1) % currentPlaylist.length;
-      loadTrack(currentIndex, true);
-    }
-
-    function prevTrack() {
-      currentIndex = (currentIndex - 1 + currentPlaylist.length) % currentPlaylist.length;
-      loadTrack(currentIndex, true);
-    }
-
-    document.getElementById('btn-next').onclick = nextTrack;
-    document.getElementById('btn-prev').onclick = prevTrack;
-
-    // Playback Progress Sync
-    function formatTime(sec) {
-      if (isNaN(sec)) return "0:00";
-      const m = Math.floor(sec / 60);
-      const s = Math.floor(sec % 60);
-      return `${m}:${s < 10 ? '0' : ''}${s}`;
-    }
-
-    function startProgressLoop() {
-      setInterval(() => {
-        if (ytPlayer && ytPlayer.getCurrentTime && isPlaying) {
-          const current = ytPlayer.getCurrentTime();
-          const total = ytPlayer.getDuration();
-          if (total > 0) {
-            const pct = (current / total) * 100;
-            document.getElementById('progress-fill').style.width = pct + '%';
-            document.getElementById('current-time').textContent = formatTime(current);
-            document.getElementById('total-duration').textContent = formatTime(total);
-          }
-        }
-      }, 500);
-    }
-
-    // Seek bar click
-    document.getElementById('progress-bar').onclick = (e) => {
-      if (!ytPlayer || !ytPlayer.getDuration) return;
-      const rect = e.currentTarget.getBoundingClientRect();
-      const pct = (e.clientX - rect.left) / rect.width;
-      const seekTime = pct * ytPlayer.getDuration();
-      ytPlayer.seekTo(seekTime, true);
-    };
-
-    // Volume Slider
-    document.getElementById('volume-slider').oninput = (e) => {
-      if (ytPlayer && ytPlayer.setVolume) {
-        ytPlayer.setVolume(e.target.value);
+      // Note stem
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      if (n.step >= 4) {
+        ctx.moveTo(n.x - 6, ny);
+        ctx.lineTo(n.x - 6, ny + 28);
+      } else {
+        ctx.moveTo(n.x + 6, ny);
+        ctx.lineTo(n.x + 6, ny - 28);
       }
-    };
+      ctx.stroke();
+    } else {
+      // Percussion X-notehead
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(n.x - 5, ny - 5);
+      ctx.lineTo(n.x + 5, ny + 5);
+      ctx.moveTo(n.x + 5, ny - 5);
+      ctx.lineTo(n.x - 5, ny + 5);
+      ctx.stroke();
 
-    // Render Music Cards
-    function renderGrid(tracks) {
-      const grid = document.getElementById('music-grid');
-      grid.innerHTML = '';
-      tracks.forEach((track, idx) => {
-        const card = document.createElement('div');
-        card.className = 'music-card';
-        card.innerHTML = `
-          <div class="card-img-wrap">
-            <img src="${track.cover}" alt="Cover">
-            <div class="play-overlay">
-              <div class="play-btn-icon"><i class="fa-solid fa-play"></i></div>
-            </div>
-          </div>
-          <div class="card-title">${track.title}</div>
-          <div class="card-artist">${track.artist}</div>
-        `;
-        card.onclick = () => {
-          currentPlaylist = tracks;
-          loadTrack(idx, true);
-        };
-        grid.appendChild(card);
-      });
+      // Stem
+      ctx.beginPath();
+      ctx.moveTo(n.x + 5, ny - 5);
+      ctx.lineTo(n.x + 5, ny - 28);
+      ctx.stroke();
     }
 
-    // Direct YouTube URL/ID Input Handler
-    document.getElementById('yt-play-btn').onclick = () => {
-      const val = document.getElementById('yt-url-input').value.trim();
-      let videoId = val;
+    // Small pitch/drum label underneath or above
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+    ctx.fillText(n.label, n.x, bottomLineY + 26);
 
-      if (val.includes('youtube.com/watch?v=')) {
-        videoId = val.split('v=')[1].split('&')[0];
-      } else if (val.includes('youtu.be/')) {
-        videoId = val.split('youtu.be/')[1].split('?')[0];
-      }
+    ctx.restore();
 
-      if (videoId) {
-        const customTrack = {
-          title: "Custom YouTube Track",
-          artist: "YouTube Stream",
-          ytId: videoId,
-          cover: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
-        };
-        currentPlaylist.unshift(customTrack);
-        renderGrid(currentPlaylist);
-        loadTrack(0, true);
-      }
-    };
+    if (n.alpha <= 0) {
+      sheetNotes.splice(i, 1);
+    }
+  }
 
-    // Real-Time Search using iTunes API (for Metadata/Cover Art) + YouTube Bridge
-    let searchDebounce = null;
-    document.getElementById('search-input').oninput = (e) => {
-      const query = e.target.value.trim();
-      if (!query) {
-        currentPlaylist = [...defaultTracks];
-        document.getElementById('grid-title').textContent = "Featured Songs";
-        renderGrid(currentPlaylist);
-        return;
-      }
+  requestAnimationFrame(animate);
+}
 
-      clearTimeout(searchDebounce);
-      searchDebounce = setTimeout(async () => {
-        document.getElementById('grid-title').textContent = `Search Results for "${query}"`;
-        try {
-          const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=12`);
-          const data = await res.json();
-          if (data.results && data.results.length > 0) {
-            currentPlaylist = data.results.map(item => ({
-              title: item.trackName,
-              artist: item.artistName,
-              // Fallback YouTube search ID based on song name
-              ytId: defaultTracks[Math.floor(Math.random() * defaultTracks.length)].ytId,
-              cover: item.artworkUrl100.replace('100x100bb', '400x400bb')
-            }));
-            renderGrid(currentPlaylist);
-          }
-        } catch (err) {
-          console.log("Search error", err);
-        }
-      }, 400);
-    };
-
-    // Category presets
-    document.getElementById('nav-lofi').onclick = () => {
-      document.getElementById('search-input').value = 'Lofi Beats';
-      document.getElementById('search-input').dispatchEvent(new Event('input'));
-    };
-
-    document.getElementById('nav-synth').onclick = () => {
-      document.getElementById('search-input').value = 'Synthwave';
-      document.getElementById('search-input').dispatchEvent(new Event('input'));
-    };
-
-    // Initial Render
-    renderGrid(defaultTracks);
-  </script>
+requestAnimationFrame(animate);
+</script>
 </body>
 </html>
